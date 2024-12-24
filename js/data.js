@@ -385,7 +385,7 @@ window.ArticlesManager = {
                 }
             } catch (error) {
                 console.error('Error sending notifications:', error);
-                // 继续��行，不影响文章添加
+                // 继续行，不影响文章添加
             }
 
             return newArticle;

@@ -1,7 +1,7 @@
 // GitHub Configuration
 window.GITHUB_CONFIG = {
     REPO_OWNER: 'Dennis-Culhane',
-    REPO_NAME: 'culhane2.github.io',
+    REPO_NAME: 'Culhane.github.io',
     BRANCH: 'main'
 };
 
