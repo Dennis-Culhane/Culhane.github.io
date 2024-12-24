@@ -121,7 +121,7 @@ window.ArticlesManager = {
             const base64Content = btoa(unescape(encodeURIComponent(jsonContent)));
 
             // 获取最新的SHA
-            const checkResponse = await fetch(`${window.GITHUB_API_URL}/contents/data/articles.json`, {
+            const checkResponse = await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/vnd.github.v3+json'
@@ -149,7 +149,7 @@ window.ArticlesManager = {
             }
 
             // Save to GitHub
-            const response = await fetch(`${window.GITHUB_API_URL}/contents/data/articles.json`, {
+            const response = await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -220,7 +220,7 @@ window.ArticlesManager = {
 
             // Create papers directory if it doesn't exist
             try {
-                const dirResponse = await fetch(`${window.GITHUB_API_URL}/contents/papers`, {
+                const dirResponse = await fetch(`${config.apiBaseUrl}/contents/${config.pdfStoragePath}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Accept': 'application/vnd.github.v3+json'
@@ -237,7 +237,7 @@ window.ArticlesManager = {
             // Check if file exists
             let sha = '';
             try {
-                const checkResponse = await fetch(`${window.GITHUB_API_URL}/contents/papers/${encodeURIComponent(file.name)}`, {
+                const checkResponse = await fetch(`${config.apiBaseUrl}/contents/${config.pdfStoragePath}${encodeURIComponent(file.name)}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Accept': 'application/vnd.github.v3+json'
@@ -264,7 +264,7 @@ window.ArticlesManager = {
             }
 
             // Upload to GitHub
-            const response = await fetch(`${window.GITHUB_API_URL}/contents/papers/${encodeURIComponent(file.name)}`, {
+            const response = await fetch(`${config.apiBaseUrl}/contents/${config.pdfStoragePath}${encodeURIComponent(file.name)}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -284,7 +284,7 @@ window.ArticlesManager = {
 
             console.log('PDF uploaded successfully');
             // Generate the raw URL for the PDF
-            const pdfUrl = `${window.GITHUB_RAW_URL}/papers/${encodeURIComponent(file.name)}`;
+            const pdfUrl = `${config.rawBaseUrl}/${config.pdfStoragePath}${encodeURIComponent(file.name)}`;
             console.log('PDF URL:', pdfUrl);
             return pdfUrl;
         } catch (error) {
@@ -385,7 +385,7 @@ window.ArticlesManager = {
                 }
             } catch (error) {
                 console.error('Error sending notifications:', error);
-                // 继续执行，不影响文章添加
+                // 继续��行，不影响文章添加
             }
 
             return newArticle;
@@ -423,7 +423,7 @@ window.ArticlesManager = {
                 // Try to delete the PDF file
                 try {
                     // Get the PDF file SHA
-                    const pdfResponse = await fetch(`${window.GITHUB_API_URL}/contents/papers/${encodeURIComponent(article.fileName)}`, {
+                    const pdfResponse = await fetch(`${config.apiBaseUrl}/contents/${config.pdfStoragePath}${encodeURIComponent(article.fileName)}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/vnd.github.v3+json'
@@ -433,7 +433,7 @@ window.ArticlesManager = {
                     if (pdfResponse.ok) {
                         const pdfData = await pdfResponse.json();
                         // Delete the PDF file
-                        const deleteResponse = await fetch(`${window.GITHUB_API_URL}/contents/papers/${encodeURIComponent(article.fileName)}`, {
+                        const deleteResponse = await fetch(`${config.apiBaseUrl}/contents/${config.pdfStoragePath}${encodeURIComponent(article.fileName)}`, {
                             method: 'DELETE',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -561,7 +561,7 @@ window.ArticlesManager = {
             };
 
             // 获取现有文件的 SHA
-            const response = await fetch(`${window.config.apiBaseUrl}/contents/${window.config.articlesPath}`, {
+            const response = await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/vnd.github.v3+json'
@@ -572,7 +572,7 @@ window.ArticlesManager = {
 
             // 更新文件
             const content = btoa(JSON.stringify(articles, null, 2));
-            await fetch(`${window.config.apiBaseUrl}/contents/${window.config.articlesPath}`, {
+            await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -583,7 +583,7 @@ window.ArticlesManager = {
                     message: `[skip ci] Update: ${articleData.title.substring(0, 50)}...`,
                     content: content,
                     sha: sha,
-                    branch: window.config.branch
+                    branch: window.GITHUB_CONFIG.BRANCH
                 })
             });
 
@@ -602,7 +602,7 @@ window.ArticlesManager = {
 
         try {
             // 获取现有文件的 SHA
-            const response = await fetch(`${window.config.apiBaseUrl}/contents/${window.config.articlesPath}`, {
+            const response = await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/vnd.github.v3+json'
@@ -613,7 +613,7 @@ window.ArticlesManager = {
 
             // 更新文件
             const content = btoa(JSON.stringify(articles, null, 2));
-            await fetch(`${window.config.apiBaseUrl}/contents/${window.config.articlesPath}`, {
+            await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -624,7 +624,7 @@ window.ArticlesManager = {
                     message: `[skip ci] Batch ${operation} articles`,
                     content: content,
                     sha: sha,
-                    branch: window.config.branch
+                    branch: window.GITHUB_CONFIG.BRANCH
                 })
             });
 
