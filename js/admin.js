@@ -796,7 +796,7 @@ window.saveArticlesToStorage = saveArticlesToStorage;
 const GITHUB_CONFIG = {
     TOKEN: process.env.GITHUB_TOKEN || window.GITHUB_CONFIG?.TOKEN,
     REPO_OWNER: 'Dennis-Culhane',
-    REPO_NAME: 'culhane2.github.io',
+    REPO_NAME: 'culhane.github.io',
     BRANCH: 'main'
 };
 
