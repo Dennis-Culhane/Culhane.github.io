@@ -377,6 +377,40 @@
     </div>
 
     <script>
+        // Token 验证函数
+        async function validateToken(token) {
+            try {
+                // 检查 token 格式
+                if (!token || !/^ghp_[a-zA-Z0-9]{36}$/.test(token)) {
+                    throw new Error('Invalid token format');
+                }
+
+                // 验证 token 权限
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Token validation failed');
+                }
+
+                const data = await response.json();
+                
+                // 验证用户权限
+                if (data.login !== window.GITHUB_CONFIG.REPO_OWNER) {
+                    throw new Error('Unauthorized user');
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Token validation error:', error);
+                return false;
+            }
+        }
+
         // Token handling
         document.getElementById('save-token-btn').addEventListener('click', async function() {
             const tokenInput = document.getElementById('github-token');
@@ -572,7 +606,7 @@
                 document.getElementById('edit-categories').value = article.categories ? article.categories.join(', ') : '';
                 document.getElementById('edit-abstract').value = cleanText(article.abstract || '');
 
-                // 显示模态��
+                // 显示模态框
                 document.getElementById('edit-modal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             } catch (error) {
