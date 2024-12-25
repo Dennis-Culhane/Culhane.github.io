@@ -733,6 +733,7 @@ async function renderArticlesList() {
             articlesList.innerHTML = '<p class="text-gray-500">No articles found.</p>';
             return;
         }
+        The Impact of Supportive Housing for Homeless People with Severe Mental Illness on the Utilization of the Public Health, Corrections, and Emergency Shelter Systems: The New York-New York Initiative
 
         articlesList.innerHTML = articles.map(article => `
             <div class="bg-white rounded-lg shadow-md p-6 mb-4">
