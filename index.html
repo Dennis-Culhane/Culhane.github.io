@@ -63,7 +63,7 @@
                     <div class="article-card">
                         <h2 class="title-ellipsis">${article.title || 'Untitled'}</h2>
                         <p class="authors-ellipsis">${article.authors || 'Unknown'}</p>
-                        <p class="categories-ellipsis">${article.categories ? article.categories.join(', ') : ''}</p>
+                        <p class="categories-ellipsis">${article.category ? article.category.join(', ') : ''}</p>
                         <p class="abstract-clamp">${article.abstract || 'No abstract available'}</p>
                         <div class="mt-4">
                             <a href="${article.pdfUrl}" target="_blank" class="text-blue-600 hover:text-blue-800">
@@ -565,7 +565,7 @@
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', initializePage);
 
-        // 添加显示和关闭模态框的函数
+        // 添加显示和关闭模态框的函���
         function showArticleDetail(article) {
             const cleanText = (text) => {
                 if (!text) return '';

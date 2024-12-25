@@ -12,7 +12,7 @@ export interface Article {
   _id: string;
   title: string;
   authors: string[];
-  category: string;
+  categories: string[];
   publicationDate: Date;
   abstract: string;
   pdfUrl: string;

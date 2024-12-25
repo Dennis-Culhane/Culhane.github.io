@@ -714,3 +714,12 @@ function formatExcelDate(excelDate) {
         return new Date().toISOString().split('T')[0];
     }
 }
+
+// 在处理Excel导入的函数中
+function processExcelData(data) {
+    return data.map(row => ({
+        // ... 其他字段 ...
+        categories: row.categories ? row.categories.split(',').map(c => c.trim()) : [],
+        // ... 其他字段 ...
+    }));
+}
