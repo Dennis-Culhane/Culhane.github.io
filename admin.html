@@ -534,7 +534,7 @@
                 // 处理分类
                 const categories = formData.get('categories')
                     ? formData.get('categories')
-                        .split(/[,;|]/)
+                        .split(/[;|]/)
                         .map(cat => cat.trim())
                         .filter(Boolean)
                     : [];
