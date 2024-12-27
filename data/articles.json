@@ -2732,5 +2732,16 @@
     ],
     "abstract": "A web-based tool for creating tables, maps, charts and statistical profiles for Philadelphia's schools and neighborhoods based on data from the School District of Philadelphia. (Password protected)",
     "pdfUrl": "http://www.cml.upenn.edu/schoolbase"
+  },
+  {
+    "id": "1735315704582",
+    "title": "Philly Sitefinder",
+    "authors": "Dennis P Culhane, University of Pennsylvania",
+    "date": "2003-01-01",
+    "categories": [
+      "AISP and Integrated Data Systems"
+    ],
+    "abstract": "A web-based tool for identifying vacant commercial properties and brownfields in eastern and eastern north Philadelphia.",
+    "pdfUrl": "http://www.cml.upenn.edu/phillysitefinder"
   }
 ]
