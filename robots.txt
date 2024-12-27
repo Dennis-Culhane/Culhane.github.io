@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://dennisculhane.com/sitemap.xml
