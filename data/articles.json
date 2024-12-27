@@ -2743,5 +2743,18 @@
     ],
     "abstract": "A web-based tool for identifying vacant commercial properties and brownfields in eastern and eastern north Philadelphia.",
     "pdfUrl": "http://www.cml.upenn.edu/phillysitefinder"
+  },
+  {
+    "id": "1735315707566",
+    "title": "Where Homeless Families Come From: Toward a Prevention-Oriented Approach in Washington, DC",
+    "authors": "Dennis P Culhane, University of PennsylvaniaChang Moo Lee, University of Pennsylvania",
+    "date": "1997-11-01",
+    "categories": [
+      "Other",
+      "Structural Determinants of Homelessness",
+      "Housing Interventions"
+    ],
+    "abstract": "",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Where%20Homeless%20Families%20Come%20From_%20Toward%20a%20Prevention-Oriented%20Approach%20in%20Washington%2C%20DC%281%29.pdf"
   }
 ]
