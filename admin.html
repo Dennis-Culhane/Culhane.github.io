@@ -534,7 +534,7 @@
                 // 处理分类
                 const categories = formData.get('categories')
                     ? formData.get('categories')
-                        .split(/[;|]/)
+                        .split(/[,;|]/)
                         .map(cat => cat.trim())
                         .filter(Boolean)
                     : [];
@@ -828,7 +828,7 @@
                     if (row.Categories || row.categories) {
                         const categoryStr = (row.Categories || row.categories).toString();
                         categories = categoryStr
-                            .split(/[;|]/)  // 支持逗号、分号、竖线分隔
+                            .split(/[,;|]/)  // 支持逗号、分号、竖线分隔
                             .map(cat => cat.trim())
                             .filter(Boolean);  // 移除空值
                     }

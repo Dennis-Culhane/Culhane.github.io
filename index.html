@@ -283,7 +283,7 @@
 
             <!-- Latest Articles Section -->
             <div id="latest-articles-section" class="mb-12">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Top 20 Latest Articles</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">20 Most Recent Publications</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="latest-articles">
                     <!-- Latest articles will be displayed here -->
                 </div>
@@ -321,12 +321,12 @@
                     <p id="modal-abstract" class="text-gray-700 mb-6"></p>
                     <div id="modal-download" class="mt-4">
                         <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                            下载文章
+                            Download
                         </a>
                     </div>
                 </div>
                 <div id="pdf-preview" class="h-[600px] bg-gray-100 rounded-lg">
-                    <iframe id="pdf-iframe" class="w-full h-full rounded-lg" src="" frameborder="0"></iframe>
+                    <iframe id="pdf-iframe" class="w-full h-full rounded-lg" src="about:blank" frameborder="0"></iframe>
                 </div>
             </div>
         </div>
@@ -471,10 +471,15 @@
                     article.score > 0
                 );
 
-                // 按匹配分数排序
-                filteredArticles.sort((a, b) => b.score - a.score);
+                // 按匹配分数排序，分数相同时按日期降序
+                filteredArticles.sort((a, b) => {
+                    if (b.score !== a.score) {
+                        return b.score - a.score;
+                    }
+                    return new Date(b.date) - new Date(a.date);
+                });
             } else {
-                // 没有搜索词时按日期排序
+                // 没有搜索词时按日期降序排序
                 filteredArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
             }
 
@@ -565,7 +570,7 @@
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', initializePage);
 
-        // 添加显示和关闭模态框的函���
+        // 添加显示和关闭模态框的函数
         function showArticleDetail(article) {
             const cleanText = (text) => {
                 if (!text) return '';
@@ -592,10 +597,27 @@
             const pdfIframe = document.getElementById('pdf-iframe');
             
             if (article.pdfUrl) {
+                // 设置下载链接
                 downloadLink.href = article.pdfUrl;
+                downloadLink.setAttribute('download', ''); // 添加download属性以触发下载
                 downloadLink.parentElement.style.display = 'block';
-                pdfIframe.src = article.pdfUrl;
+                
+                // 创建一个用于预览的URL
+                const previewUrl = article.pdfUrl.replace('raw.githubusercontent.com', 'github.com')
+                    .replace('/main/', '/blob/main/');
+                
+                // 使用GitHub Pages URL进行预览
+                const previewSrc = `https://docs.google.com/viewer?url=${encodeURIComponent(article.pdfUrl)}&embedded=true`;
+                
+                // 自动加载预览
+                pdfIframe.src = previewSrc;
                 pdfPreview.style.display = 'block';
+                
+                // 移除之前的Preview按钮（如果存在）
+                const existingPreviewButton = downloadLink.parentElement.querySelector('button');
+                if (existingPreviewButton) {
+                    existingPreviewButton.remove();
+                }
             } else {
                 downloadLink.parentElement.style.display = 'none';
                 pdfPreview.style.display = 'none';
