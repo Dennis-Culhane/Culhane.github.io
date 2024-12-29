@@ -53,28 +53,15 @@
                     throw new Error('Failed to fetch articles');
                 }
                 
-                const articles = await response.json();
-                const container = document.getElementById('articles-list');
+                // 获取并存储文章数据
+                allArticles = await response.json();
                 
-                if (!articles || articles.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500 text-center">No articles found.</p>';
-                    return;
-                }
+                // 渲染最新文章
+                renderLatestArticles();
                 
-                // 渲染文章列表
-                container.innerHTML = articles.map(article => `
-                    <div class="article-card">
-                        <h2 class="title-ellipsis">${article.title || 'Untitled'}</h2>
-                        <p class="authors-ellipsis">${article.authors || 'Unknown'}</p>
-                        <p class="categories-ellipsis">${article.category ? article.category.join(', ') : ''}</p>
-                        <p class="abstract-clamp">${article.abstract || 'No abstract available'}</p>
-                        <div class="mt-4">
-                            <a href="${article.pdfUrl}" target="_blank" class="text-blue-600 hover:text-blue-800">
-                                View Article
-                            </a>
-                        </div>
-                    </div>
-                `).join('');
+                // 初始渲染所有文章
+                filterAndRenderArticles();
+
             } catch (error) {
                 console.error('Initialization error:', error);
                 const container = document.getElementById('articles-list');
