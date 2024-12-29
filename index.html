@@ -346,9 +346,9 @@
             <p class="text-gray-600 mb-4">
                 Enter your email address to receive notifications when new articles are published.
             </p>
-            <form id="follow-form" class="space-y-4">
+            <form id="follow-form" class="space-y-4" onsubmit="submitToGoogleForm(event)">
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                    <label for="follow-email" class="block text-sm font-medium text-gray-700">Email address</label>
                     <input type="email" id="follow-email" name="email" required
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -658,20 +658,6 @@
             document.getElementById('follow-form').reset();
         }
 
-        document.getElementById('follow-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const emailInput = document.getElementById('follow-email');
-            const email = emailInput.value.trim();
-
-            try {
-                await FollowersManager.addFollower(email);
-                alert('Successfully subscribed to updates!');
-                closeFollowModal();
-            } catch (error) {
-                alert(error.message);
-            }
-        });
-
         // 点击模态框背景关闭
         document.getElementById('follow-modal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -711,6 +697,36 @@
             const searchSection = document.querySelector('label[for="search"]');
             if (searchSection) {
                 searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Google Form 提交函数
+        async function submitToGoogleForm(e) {
+            e.preventDefault();
+            const email = document.getElementById('follow-email').value;
+            
+            // Google Form 提交 URL
+            const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSeXM3Kh7c7dFuqiYGRZAWvb4dr3Fbv8EBlJihN-0g9hX-ASyA/formResponse';
+            
+            // 构建表单数据
+            const formData = new FormData();
+            formData.append('entry.1677190001', email);  // 正确的 entry ID
+            
+            try {
+                // 使用 fetch 提交表单
+                const response = await fetch(formUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: formData
+                });
+                
+                // 显示成功消息
+                alert('Successfully subscribed to updates!');
+                closeFollowModal();
+                document.getElementById('follow-form').reset();
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Error submitting form. Please try again.');
             }
         }
     </script>
