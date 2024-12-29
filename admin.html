@@ -144,8 +144,8 @@
         <div id="main-content" class="hidden space-y-8">
             <!-- Profile Management Section -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Profile Management</h2>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Profile</h2>
                     <button id="edit-profile-btn" 
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,19 +154,6 @@
                         </svg>
                         Edit Profile
                     </button>
-                </div>
-                <div id="profile-preview" class="space-y-4">
-                    <div class="flex items-start space-x-6">
-                        <img id="current-profile-img" src="" alt="Profile" 
-                            class="w-32 h-32 object-cover rounded-lg shadow">
-                        <div>
-                            <h3 id="preview-name" class="text-xl font-bold"></h3>
-                            <div id="preview-positions" class="text-gray-600 space-y-1 mt-2"></div>
-                        </div>
-                    </div>
-                    <div class="prose max-w-none">
-                        <div id="preview-biography" class="text-gray-700"></div>
-                    </div>
                 </div>
             </div>
 
@@ -283,11 +270,26 @@
                     <div>
                         <label for="article-search" class="block text-sm font-medium text-gray-700 mb-2">Search Articles</label>
                         <div class="flex gap-2">
-                            <input type="text" id="article-search"
-                                class="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Search by title, author, or abstract...">
-                            <button onclick="searchArticles()"
+                            <div class="flex-1 relative">
+                                <input type="text" id="article-search"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Search by title, author, or abstract..."
+                                    onkeypress="if(event.key === 'Enter') performSearch()">
+                                <!-- 添加清除按钮 -->
+                                <button id="clear-search" 
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"
+                                    onclick="clearSearch()">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <button onclick="performSearch()"
                                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                                 Search
                             </button>
                         </div>
@@ -476,26 +478,87 @@
                     });
 
                     if (response.ok) {
-                        // 验证成功后显示所有内容
                         document.getElementById('token-input-section').classList.add('hidden');
                         document.getElementById('main-content').classList.remove('hidden');
                         document.getElementById('edit-profile-btn').classList.remove('hidden');
-                        await renderArticlesList();
-                        await initializeExistingCategories();
-                        await loadProfile();
+                        // 初始化所有功能
+                        await initializeAllFeatures();
                     } else {
                         sessionStorage.removeItem('github_token');
-                        // 验证失败保持只显示 token 输入
                         document.getElementById('token-input-section').classList.remove('hidden');
                     }
                 } catch (error) {
                     console.error('Token verification failed:', error);
                     sessionStorage.removeItem('github_token');
-                    // 出错时保持只显示 token 输入
                     document.getElementById('token-input-section').classList.remove('hidden');
                 }
             }
         });
+
+        // 存储所有文章和当前过滤器状态
+        let allArticles = [];
+        let activeCategories = new Set();
+        let searchTerm = '';
+
+        // 搜索函数
+        function performSearch() {
+            const searchInput = document.getElementById('article-search');
+            const clearButton = document.getElementById('clear-search');
+            searchTerm = searchInput.value.toLowerCase().trim();
+            
+            // 显示/隐藏清除按钮
+            clearButton.style.display = searchTerm ? 'block' : 'none';
+            
+            filterAndRenderArticles();
+            
+            // 滚动到搜索框位置
+            if (searchTerm && searchTerm.length > 0) {
+                const searchSection = document.querySelector('label[for="article-search"]');
+                if (searchSection) {
+                    searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        // 清除搜索
+        function clearSearch() {
+            const searchInput = document.getElementById('article-search');
+            const clearButton = document.getElementById('clear-search');
+            searchInput.value = '';
+            searchTerm = '';
+            clearButton.style.display = 'none';
+            filterAndRenderArticles();
+            // 清除搜索时滚动到搜索框位置
+            const searchSection = document.querySelector('label[for="article-search"]');
+            if (searchSection) {
+                searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // 初始化所有功能
+        async function initializeAllFeatures() {
+            try {
+                console.log('Initializing features...');
+                // 先渲染文章列表
+                await renderArticlesList();
+                // 然后初始化分类
+                await initializeExistingCategories();
+                // 加载个人资料
+                await loadProfile();
+                // 初始化搜索功能
+                const searchInput = document.getElementById('article-search');
+                if (searchInput) {
+                    searchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            performSearch();
+                        }
+                    });
+                }
+                console.log('All features initialized');
+            } catch (error) {
+                console.error('Error initializing features:', error);
+            }
+        }
 
         // Token handling
         document.getElementById('save-token-btn').addEventListener('click', async function() {
@@ -508,9 +571,8 @@
                     document.getElementById('token-input-section').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     document.getElementById('edit-profile-btn').classList.remove('hidden');
-                    await renderArticlesList();
-                    await initializeExistingCategories();
-                    await loadProfile();
+                    // 初始化所有功能
+                    await initializeAllFeatures();
                 } else {
                     throw new Error('Token validation failed');
                 }
@@ -641,7 +703,7 @@
                     </div>
                 `).join('');
 
-                // 始化批量删除功能
+                // 初始化批量删除功能
                 initializeBatchDelete();
             } catch (error) {
                 console.error('Error rendering articles:', error);
@@ -695,68 +757,77 @@
             }
         }
 
-        // 添加批量删除功能
+        // 初始化批量删除功能
         function initializeBatchDelete() {
-            const selectAllBtn = document.getElementById('select-all-btn');
-            const batchDeleteBtn = document.getElementById('batch-delete-btn');
-            const selectedCountSpan = document.getElementById('selected-count');
-            const checkboxes = document.querySelectorAll('.article-checkbox');
-
-            // 更新选中状态和按钮显示
-            function updateSelection() {
-                const checkedBoxes = document.querySelectorAll('.article-checkbox:checked');
-                const checkedCount = checkedBoxes.length;
+            try {
+                const selectAllBtn = document.getElementById('select-all-btn');
+                const batchDeleteBtn = document.getElementById('batch-delete-btn');
+                const selectedCountSpan = document.getElementById('selected-count');
+                const checkboxes = document.querySelectorAll('.article-checkbox');
                 
-                batchDeleteBtn.classList.toggle('hidden', checkedCount === 0);
-                selectedCountSpan.classList.toggle('hidden', checkedCount === 0);
-                selectedCountSpan.textContent = `${checkedCount} item${checkedCount !== 1 ? 's' : ''} selected`;
-                selectAllBtn.textContent = checkedCount === checkboxes.length ? 'Deselect All' : 'Select All';
-            }
-
-            // 全选/取消全选
-            selectAllBtn.addEventListener('click', () => {
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-                checkboxes.forEach(cb => cb.checked = !allChecked);
-                updateSelection();
-            });
-
-            // 监听每个复选框的变化
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateSelection);
-            });
-
-            // 批量删除
-            batchDeleteBtn.addEventListener('click', async () => {
-                const selectedIds = Array.from(document.querySelectorAll('.article-checkbox:checked'))
-                    .map(cb => cb.dataset.articleId);
-
-                if (selectedIds.length === 0) return;
-
-                if (confirm(`Are you sure you want to delete ${selectedIds.length} selected articles?`)) {
-                    try {
-                        batchDeleteBtn.disabled = true;
-                        batchDeleteBtn.textContent = 'Deleting...';
-
-                        for (const id of selectedIds) {
-                            await ArticlesManager.deleteArticle(id);
-                            // 添加短暂延迟避免请求过于频繁
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        }
-
-                        await renderArticlesList();
-                        alert('Selected articles deleted successfully!');
-                    } catch (error) {
-                        console.error('Error deleting articles:', error);
-                        alert('Error deleting articles: ' + error.message);
-                    } finally {
-                        batchDeleteBtn.disabled = false;
-                        batchDeleteBtn.textContent = 'Delete Selected';
-                    }
+                // 检查必要的元素是否存在
+                if (!selectAllBtn || !batchDeleteBtn || !selectedCountSpan || !checkboxes.length) {
+                    console.log('Batch delete elements not ready');
+                    return;
                 }
-            });
 
-            // 初始化选中状态
-            updateSelection();
+                // 更新选中状态和按钮显示
+                function updateSelection() {
+                    const checkedBoxes = document.querySelectorAll('.article-checkbox:checked');
+                    const checkedCount = checkedBoxes.length;
+                    
+                    batchDeleteBtn.classList.toggle('hidden', checkedCount === 0);
+                    selectedCountSpan.classList.toggle('hidden', checkedCount === 0);
+                    selectedCountSpan.textContent = `${checkedCount} item${checkedCount !== 1 ? 's' : ''} selected`;
+                    selectAllBtn.textContent = checkedCount === checkboxes.length ? 'Deselect All' : 'Select All';
+                }
+
+                // 全选/取消全选
+                selectAllBtn.addEventListener('click', () => {
+                    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                    checkboxes.forEach(cb => cb.checked = !allChecked);
+                    updateSelection();
+                });
+
+                // 监听每个复选框的变化
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateSelection);
+                });
+
+                // 批量删除
+                batchDeleteBtn.addEventListener('click', async () => {
+                    const selectedIds = Array.from(document.querySelectorAll('.article-checkbox:checked'))
+                        .map(cb => cb.dataset.articleId);
+
+                    if (selectedIds.length === 0) return;
+
+                    if (confirm(`Are you sure you want to delete ${selectedIds.length} selected articles?`)) {
+                        try {
+                            batchDeleteBtn.disabled = true;
+                            batchDeleteBtn.textContent = 'Deleting...';
+
+                            for (const id of selectedIds) {
+                                await ArticlesManager.deleteArticle(id);
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+
+                            await renderArticlesList();
+                            alert('Selected articles deleted successfully!');
+                        } catch (error) {
+                            console.error('Error deleting articles:', error);
+                            alert('Error deleting articles: ' + error.message);
+                        } finally {
+                            batchDeleteBtn.disabled = false;
+                            batchDeleteBtn.textContent = 'Delete Selected';
+                        }
+                    }
+                });
+
+                // 初始化选中状态
+                updateSelection();
+            } catch (error) {
+                console.error('Error initializing batch delete:', error);
+            }
         }
 
         // 修改编辑表单提交处理部分
@@ -1243,9 +1314,34 @@
         }
 
         // 事件监听器
-        document.getElementById('edit-profile-btn').addEventListener('click', function() {
-            document.getElementById('profile-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+        document.getElementById('edit-profile-btn').addEventListener('click', async function() {
+            try {
+                // 获取当前的 profile 数据
+                const response = await fetch(`${config.apiBaseUrl}/contents/data/profile.json`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('github_token')}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const profile = JSON.parse(atob(data.content));
+                    
+                    // 填充编辑表单
+                    document.getElementById('edit-profile-img').src = profile.imageUrl;
+                    document.getElementById('profile-name').value = profile.name;
+                    document.getElementById('profile-positions').value = profile.positions.join('\n');
+                    document.getElementById('profile-biography').value = profile.biography.join('\n\n');
+                }
+
+                // 显示模态框
+                document.getElementById('profile-modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } catch (error) {
+                console.error('Error loading profile for editing:', error);
+                alert('Error loading profile data: ' + error.message);
+            }
         });
 
         document.getElementById('profile-form').addEventListener('submit', async function(e) {
@@ -1265,34 +1361,63 @@
             }
         });
 
-        // 搜索和筛选相关变量
-        let searchTerm = '';
-        let activeCategories = new Set();
-
-        // 搜索文章函数
-        function searchArticles() {
-            const searchInput = document.getElementById('article-search');
-            searchTerm = searchInput.value.toLowerCase().trim();
-            filterAndRenderArticles();
-        }
-
-        // 添加过滤和渲染函数
+        // 过滤和渲染文章
         async function filterAndRenderArticles() {
-            const articles = await ArticlesManager.getArticles(true);
-            let filteredArticles = [...articles];
+            try {
+                const articles = await ArticlesManager.getArticles();
+                let filteredArticles = [...articles];
 
-            // 应用搜索过滤
-            if (searchTerm) {
-                filteredArticles = filteredArticles.filter(article => 
-                    article.title.toLowerCase().includes(searchTerm) ||
-                    article.authors.toLowerCase().includes(searchTerm) ||
-                    (article.abstract && article.abstract.toLowerCase().includes(searchTerm))
-                );
+                // 应用搜索过滤
+                if (searchTerm) {
+                    filteredArticles = filteredArticles.filter(article => 
+                        article.title.toLowerCase().includes(searchTerm) ||
+                        article.authors.toLowerCase().includes(searchTerm) ||
+                        (article.abstract && article.abstract.toLowerCase().includes(searchTerm)) ||
+                        (Array.isArray(article.categories) && 
+                            article.categories.some(cat => 
+                                cat.toLowerCase().includes(searchTerm)
+                            ))
+                    );
+                }
+
+                // 渲染过滤后的文章列表
+                const container = document.getElementById('articles-list');
+                if (!container) return;
+
+                if (filteredArticles.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center">No articles found matching your criteria.</p>';
+                    return;
+                }
+
+                container.innerHTML = filteredArticles.map(article => `
+                    <div class="article-card">
+                        <div class="flex items-center">
+                            <input type="checkbox" class="article-checkbox mr-4" data-article-id="${article.id}">
+                            <div class="flex-1">
+                                <h2 class="title-ellipsis">${article.title}</h2>
+                                <p class="authors-ellipsis">${article.authors}</p>
+                                <p class="categories-ellipsis">${Array.isArray(article.categories) ? article.categories.join(', ') : ''}</p>
+                                <p class="abstract-clamp">${article.abstract || ''}</p>
+                                <div class="mt-4 flex justify-between">
+                                    <div>
+                                        <a href="${article.pdfUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 mr-4">View Article</a>
+                                        <button onclick="openEditModal('${article.id}')" class="text-green-600 hover:text-green-800 mr-4">Edit</button>
+                                    </div>
+                                    <button onclick="deleteArticle('${article.id}')" class="text-red-600 hover:text-red-800">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // 等待 DOM 更新后再初始化批量删除功能
+                setTimeout(() => {
+                    initializeBatchDelete();
+                }, 0);
+            } catch (error) {
+                console.error('Error filtering articles:', error);
+                alert('Error filtering articles: ' + error.message);
             }
-
-            // 渲染过滤后的文章列表
-            const container = document.getElementById('articles-list');
-            // ... 使用与 renderArticlesList 相同的渲染逻辑
         }
 
         // 确保在页面加载和token验证后初始化分类
@@ -1316,6 +1441,8 @@
                         console.log('Categories initialized');
                         await renderArticlesList();
                         await loadProfile();
+                        // 初始化搜索功能
+                        initializeSearch();
                     } else {
                         sessionStorage.removeItem('github_token');
                         document.getElementById('token-input-section').classList.remove('hidden');

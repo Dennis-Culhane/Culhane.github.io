@@ -21,24 +21,12 @@ window.initializePage = async function(isAdmin = false) {
 // Shared data handling functions
 window.ArticlesManager = {
     // Get articles from GitHub storage
-    async getArticles(includeContent = false) {
+    async getArticles(requireToken = false) {
         try {
             const token = sessionStorage.getItem('github_token');
-            console.log('Getting articles, token exists:', !!token);
-
-            if (!token && includeContent) {
-                console.warn('No GitHub token found, returning empty array');
+            if (!token && requireToken) {
+                console.log('No GitHub token found, returning empty array');
                 return [];
-            }
-
-            if (!includeContent) {
-                const response = await fetch(config.getArticlesUrl());
-                if (!response.ok) {
-                    console.error('Failed to fetch articles:', response.status, response.statusText);
-                    return [];
-                }
-                const articles = await response.json();
-                return articles;
             }
 
             const headers = {
@@ -49,33 +37,16 @@ window.ArticlesManager = {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
+            const response = await fetch(`${config.apiBaseUrl}/contents/data/articles.json`, {
                 headers: headers
             });
-
-            console.log('Articles API response:', response.status, response.statusText);
-
-            if (!response.ok) {
-                console.error('Failed to fetch articles:', response.status, response.statusText);
-                return [];
-            }
-            
-            const data = await response.json();
-            console.log('Raw API response:', data);
 
             if (response.status === 404) {
                 return [];
             }
-            
-            if (!data || !data.content) {
-                console.warn('No content found in response');
-                return [];
-            }
 
-            const articles = JSON.parse(atob(data.content));
-            console.log('Parsed articles:', articles);
-            
-            return articles;
+            const data = await response.json();
+            return JSON.parse(atob(data.content));
         } catch (error) {
             console.error('Error fetching articles:', error);
             return [];
