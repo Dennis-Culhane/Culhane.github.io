@@ -144,15 +144,29 @@
         <div id="main-content" class="hidden space-y-8">
             <!-- Profile Management Section -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold">Profile Management</h2>
-                    <button id="edit-profile-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
+                    <button id="edit-profile-btn" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         Edit Profile
                     </button>
+                </div>
+                <div id="profile-preview" class="space-y-4">
+                    <div class="flex items-start space-x-6">
+                        <img id="current-profile-img" src="" alt="Profile" 
+                            class="w-32 h-32 object-cover rounded-lg shadow">
+                        <div>
+                            <h3 id="preview-name" class="text-xl font-bold"></h3>
+                            <div id="preview-positions" class="text-gray-600 space-y-1 mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="prose max-w-none">
+                        <div id="preview-biography" class="text-gray-700"></div>
+                    </div>
                 </div>
             </div>
 
@@ -354,7 +368,7 @@
         </div>
     </div>
 
-    <!-- Profile 编辑模态框 -->
+    <!-- Profile Edit Modal -->
     <div id="profile-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden flex items-center justify-center">
         <div class="bg-white rounded-lg max-w-3xl w-full mx-4 p-6">
             <div class="flex justify-between items-start mb-4">
@@ -369,29 +383,30 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Profile Image</label>
                     <div class="mt-1 flex items-center space-x-4">
-                        <img id="current-profile-img" src="" alt="Current profile" class="w-32 h-32 rounded-lg object-cover">
-                        <input type="file" id="profile-image" accept="image/*" class="hidden">
-                        <button type="button" onclick="document.getElementById('profile-image').click()"
-                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md">
-                            Change Image
-                        </button>
+                        <img id="edit-profile-img" src="" alt="Profile" 
+                            class="w-32 h-32 object-cover rounded-lg shadow">
+                        <div class="flex flex-col space-y-2">
+                            <input type="file" id="profile-image" accept="image/*" class="hidden">
+                            <button type="button" onclick="document.getElementById('profile-image').click()"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md">
+                                Change Image
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div>
                     <label for="profile-name" class="block text-sm font-medium text-gray-700">Full Name with Title</label>
                     <input type="text" id="profile-name" required
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-                        placeholder="e.g. Dennis P. Culhane, Ph.D.">
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
                 </div>
                 <div>
                     <label for="profile-positions" class="block text-sm font-medium text-gray-700">Positions (one per line)</label>
                     <textarea id="profile-positions" rows="3" required
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-                        placeholder="Dana and Andrew Stone Chair in Social Policy&#10;Professor, School of Social Policy and Practice&#10;University of Pennsylvania"></textarea>
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea>
                 </div>
                 <div>
-                    <label for="profile-description" class="block text-sm font-medium text-gray-700">Biography</label>
-                    <textarea id="profile-description" rows="6" required
+                    <label for="profile-biography" class="block text-sm font-medium text-gray-700">Biography</label>
+                    <textarea id="profile-biography" rows="6" required
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea>
                 </div>
                 <div class="flex justify-end space-x-3">
@@ -1108,7 +1123,7 @@
             }
         }
 
-        // Profile 相关函数
+        // Profile Management Functions
         async function loadProfile() {
             try {
                 const response = await fetch(`${config.apiBaseUrl}/contents/data/profile.json`, {
@@ -1122,11 +1137,19 @@
                     const data = await response.json();
                     const profile = JSON.parse(atob(data.content));
                     
-                    // 填充表单
+                    // 更新预览
                     document.getElementById('current-profile-img').src = profile.imageUrl;
+                    document.getElementById('preview-name').textContent = profile.name;
+                    document.getElementById('preview-positions').innerHTML = 
+                        profile.positions.map(pos => `<p>${pos}</p>`).join('');
+                    document.getElementById('preview-biography').innerHTML = 
+                        profile.biography.map(para => `<p>${para}</p>`).join('');
+                    
+                    // 更新编辑表单
+                    document.getElementById('edit-profile-img').src = profile.imageUrl;
                     document.getElementById('profile-name').value = profile.name;
                     document.getElementById('profile-positions').value = profile.positions.join('\n');
-                    document.getElementById('profile-description').value = profile.description;
+                    document.getElementById('profile-biography').value = profile.biography.join('\n\n');
                 }
             } catch (error) {
                 console.error('Failed to load profile:', error);
@@ -1140,7 +1163,7 @@
 
                 // 如果有新图片，先上传图片
                 const imageFile = document.getElementById('profile-image').files[0];
-                let imageUrl = document.getElementById('current-profile-img').src;
+                let imageUrl = document.getElementById('edit-profile-img').src;
                 
                 if (imageFile) {
                     imageUrl = await uploadProfileImage(imageFile);
@@ -1150,7 +1173,7 @@
                     imageUrl: imageUrl,
                     name: formData.get('profile-name'),
                     positions: formData.get('profile-positions').split('\n').map(p => p.trim()).filter(Boolean),
-                    description: formData.get('profile-description')
+                    biography: formData.get('profile-biography').split('\n\n').map(p => p.trim()).filter(Boolean)
                 };
 
                 // 获取现有文件的 SHA
@@ -1182,6 +1205,7 @@
                     })
                 });
 
+                await loadProfile();
                 alert('Profile updated successfully!');
                 closeProfileModal();
             } catch (error) {
@@ -1222,7 +1246,6 @@
         document.getElementById('edit-profile-btn').addEventListener('click', function() {
             document.getElementById('profile-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-            loadProfile();
         });
 
         document.getElementById('profile-form').addEventListener('submit', async function(e) {
@@ -1236,7 +1259,7 @@
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('current-profile-img').src = e.target.result;
+                    document.getElementById('edit-profile-img').src = e.target.result;
                 };
                 reader.readAsDataURL(this.files[0]);
             }
@@ -1272,7 +1295,7 @@
             // ... 使用与 renderArticlesList 相同的渲染逻辑
         }
 
-        // 确保在页面加��和token验证后初始化分类
+        // 确保在页面加载和token验证后初始化分类
         document.addEventListener('DOMContentLoaded', async function() {
             const token = sessionStorage.getItem('github_token');
             if (token) {

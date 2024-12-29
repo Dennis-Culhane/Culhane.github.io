@@ -41,9 +41,12 @@
     
     <!-- 初始化脚本 -->
     <script defer>
-        // 等待DOM加载完成后初始化
+        // 确保在页面加载完成后初始化所有功能
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // 初始化个人简介
+                await loadProfile();
+                
                 // 初始化页面
                 const response = await fetch(window.config.getArticlesUrl());
                 if (!response.ok) {
@@ -202,13 +205,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="lg:flex lg:items-center lg:justify-between">
                 <div class="lg:w-1/3">
-                    <img src="images/culhane-2014.jpg" 
+                    <img id="profile-image"
+                         src="" 
                          alt="Dennis P. Culhane" 
                          class="rounded-lg shadow-lg">
                 </div>
                 <div class="lg:w-2/3 lg:pl-12 mt-8 lg:mt-0">
                     <div class="flex justify-between items-start">
-                        <h2 class="text-3xl font-bold text-gray-900 mb-4">Dennis P. Culhane, Ph.D.</h2>
+                        <h2 id="profile-name" class="text-3xl font-bold text-gray-900 mb-4"></h2>
                         <button id="follow-btn" 
                             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,22 +222,9 @@
                             Follow
                         </button>
                     </div>
-                    <p class="text-xl text-gray-600 mb-6">
-                        Dana and Andrew Stone Chair in Social Policy
-                        <br>Professor, School of Social Policy and Practice
-                        <br>University of Pennsylvania
-                    </p>
+                    <div id="profile-positions" class="text-xl text-gray-600 mb-6"></div>
                     <div class="prose prose-lg text-gray-500">
-                        <p class="mb-4">
-                            Dennis P. Culhane is the Dana and Andrew Stone Chair in Social Policy at the University of Pennsylvania, 
-                            School of Social Policy and Practice. His primary area of research is homelessness and assisted housing policy. 
-                            His research has contributed to efforts to address the housing and support needs of people experiencing housing 
-                            emergencies and long-term homelessness.
-                        </p>
-                        <p>
-                            Dr. Culhane's recent research includes studies of vulnerable youth and young adults, including those experiencing 
-                            homelessness, transitioning from foster care, and facing barriers to higher education access and success.
-                        </p>
+                        <div id="profile-biography"></div>
                     </div>
                 </div>
             </div>
@@ -361,6 +352,38 @@
     </div>
 
     <script>
+        // 加载个人简介数据
+        async function loadProfile() {
+            try {
+                console.log('Loading profile from:', `${config.rawBaseUrl}/data/profile.json`);
+                const response = await fetch(`${config.rawBaseUrl}/data/profile.json`);
+                if (!response.ok) {
+                    throw new Error('Failed to load profile data');
+                }
+                
+                const profile = await response.json();
+                console.log('Loaded profile:', profile);
+                
+                // 更新页面内容
+                document.getElementById('profile-image').src = profile.imageUrl;
+                document.getElementById('profile-name').textContent = profile.name;
+                document.getElementById('profile-positions').innerHTML = 
+                    profile.positions.map(pos => `<p>${pos}</p>`).join('');
+                document.getElementById('profile-biography').innerHTML = 
+                    profile.biography.map(para => `<p class="mb-4">${para}</p>`).join('');
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                // 添加错误处理的视觉反馈
+                document.getElementById('profile-name').textContent = 'Error loading profile';
+                document.getElementById('profile-positions').innerHTML = 
+                    '<p class="text-red-500">Failed to load profile data. Please try refreshing the page.</p>';
+            }
+        }
+
+        // 在页面加载时初始化个人简介
+        document.addEventListener('DOMContentLoaded', loadProfile);
+
         // 存储所有文章和当前过滤器状态
         let allArticles = [];
         let activeCategories = new Set();
