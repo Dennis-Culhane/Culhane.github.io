@@ -432,17 +432,17 @@
                 </div>
                 <div>
                     <label for="profile-name" class="block text-sm font-medium text-gray-700">Full Name with Title</label>
-                    <input type="text" id="profile-name" required
+                    <input type="text" id="profile-name" name="profile-name" required
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
                 </div>
                 <div>
                     <label for="profile-positions" class="block text-sm font-medium text-gray-700">Positions (one per line)</label>
-                    <textarea id="profile-positions" rows="3" required
+                    <textarea id="profile-positions" name="profile-positions" rows="3" required
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea>
                 </div>
                 <div>
                     <label for="profile-biography" class="block text-sm font-medium text-gray-700">Biography</label>
-                    <textarea id="profile-biography" rows="6" required
+                    <textarea id="profile-biography" name="profile-biography" rows="6" required
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea>
                 </div>
                 <div class="flex justify-end space-x-3">
@@ -515,8 +515,11 @@
                         document.getElementById('token-input-section').classList.add('hidden');
                         document.getElementById('main-content').classList.remove('hidden');
                         document.getElementById('edit-profile-btn').classList.remove('hidden');
-                        // 初始化所有功能
-                        await initializeAllFeatures();
+                        console.log('Initializing categories...');
+                        await initializeExistingCategories();
+                        console.log('Categories initialized');
+                        await renderArticlesList();
+                        await loadProfile();
                     } else {
                         sessionStorage.removeItem('github_token');
                         document.getElementById('token-input-section').classList.remove('hidden');
@@ -1242,15 +1245,7 @@
                     const data = await response.json();
                     const profile = JSON.parse(atob(data.content));
                     
-                    // 更新预览
-                    document.getElementById('current-profile-img').src = profile.imageUrl;
-                    document.getElementById('preview-name').textContent = profile.name;
-                    document.getElementById('preview-positions').innerHTML = 
-                        profile.positions.map(pos => `<p>${pos}</p>`).join('');
-                    document.getElementById('preview-biography').innerHTML = 
-                        profile.biography.map(para => `<p>${para}</p>`).join('');
-                    
-                    // 更新编辑表单
+                    // 更新编辑表单 - 完全匹配 profile.json 的结构
                     document.getElementById('edit-profile-img').src = profile.imageUrl;
                     document.getElementById('profile-name').value = profile.name;
                     document.getElementById('profile-positions').value = profile.positions.join('\n');
@@ -1263,10 +1258,31 @@
 
         async function saveProfile(formData) {
             try {
+                // 获取token并立即验证
                 const token = sessionStorage.getItem('github_token');
-                if (!token) throw new Error('No token found');
+                if (!token) {
+                    // 如果没有token，尝试重新登录
+                    document.getElementById('token-input-section').classList.remove('hidden');
+                    document.getElementById('main-content').classList.add('hidden');
+                    throw new Error('Please login again to continue');
+                }
 
-                // 如果有新图片，先上传图片
+                // 验证token是否有效
+                const verifyResponse = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!verifyResponse.ok) {
+                    sessionStorage.removeItem('github_token');
+                    document.getElementById('token-input-section').classList.remove('hidden');
+                    document.getElementById('main-content').classList.add('hidden');
+                    throw new Error('Session expired. Please login again');
+                }
+
+                // 继续处理保存逻辑
                 const imageFile = document.getElementById('profile-image').files[0];
                 let imageUrl = document.getElementById('edit-profile-img').src;
                 
@@ -1274,12 +1290,28 @@
                     imageUrl = await uploadProfileImage(imageFile);
                 }
 
+                // 添加日志来检查表单数据
+                console.log('Form data values:', {
+                    name: formData.get('profile-name'),
+                    positions: formData.get('profile-positions'),
+                    biography: formData.get('profile-biography')
+                });
+
                 const profileData = {
                     imageUrl: imageUrl,
                     name: formData.get('profile-name'),
-                    positions: formData.get('profile-positions').split('\n').map(p => p.trim()).filter(Boolean),
-                    biography: formData.get('profile-biography').split('\n\n').map(p => p.trim()).filter(Boolean)
+                    positions: (formData.get('profile-positions') || '')
+                        .split('\n')
+                        .map(p => p.trim())
+                        .filter(Boolean),
+                    biography: (formData.get('profile-biography') || '')
+                        .split('\n\n')
+                        .map(p => p.trim())
+                        .filter(Boolean)
                 };
+
+                // 添加日志检查处理后的数据
+                console.log('Processed profile data:', profileData);
 
                 // 获取现有文件的 SHA
                 const response = await fetch(`${config.apiBaseUrl}/contents/data/profile.json`, {
@@ -1295,20 +1327,37 @@
                     sha = data.sha;
                 }
 
-                // 保存 profile 数据
-                await fetch(`${config.apiBaseUrl}/contents/data/profile.json`, {
+                // 准备要发送的数据
+                const content = btoa(JSON.stringify(profileData, null, 2));
+                const requestBody = {
+                    message: 'Update profile',
+                    content: content,
+                    sha: sha,
+                    branch: config.branch
+                };
+
+                // 添加日志检查请求体
+                console.log('Request body:', requestBody);
+
+                // 发送更新请求
+                const saveResponse = await fetch(`${config.apiBaseUrl}/contents/data/profile.json`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        message: 'Update profile',
-                        content: btoa(JSON.stringify(profileData, null, 2)),
-                        sha: sha,
-                        branch: config.branch
-                    })
+                    body: JSON.stringify(requestBody)
                 });
+
+                // 检查响应状态
+                if (!saveResponse.ok) {
+                    const errorData = await saveResponse.json();
+                    console.error('GitHub API Error:', errorData);
+                    throw new Error(`GitHub API error: ${errorData.message}`);
+                }
+
+                const saveResult = await saveResponse.json();
+                console.log('Save response:', saveResult);
 
                 await loadProfile();
                 alert('Profile updated successfully!');
@@ -1380,7 +1429,16 @@
 
         document.getElementById('profile-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+            console.log('Form submitted');
             const formData = new FormData(this);
+            
+            // 检查表单数据
+            console.log('Form elements:', {
+                name: this.elements['profile-name'].value,
+                positions: this.elements['profile-positions'].value,
+                biography: this.elements['profile-biography'].value
+            });
+            
             await saveProfile(formData);
         });
 
@@ -1475,8 +1533,6 @@
                         console.log('Categories initialized');
                         await renderArticlesList();
                         await loadProfile();
-                        // 初始化搜索功能
-                        initializeSearch();
                     } else {
                         sessionStorage.removeItem('github_token');
                         document.getElementById('token-input-section').classList.remove('hidden');
