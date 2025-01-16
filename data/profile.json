@@ -1,13 +1,6 @@
 {
-  "name": "Dennis P. Culhane, Ph.D.",
-  "positions": [
-    "Dana and Andrew Stone Chair in Social Policy",
-    "Professor, School of Social Policy and Practice",
-    "University of Pennsylvania"
-  ],
-  "biography": [
-    "Dennis P. Culhane is the Dana and Andrew Stone Chair in Social Policy at the University of Pennsylvania, School of Social Policy and Practice. His primary area of research is homelessness and assisted housing policy. His research has contributed to efforts to address the housing and support needs of people experiencing housing emergencies and long-term homelessness.",
-    "Dr. Culhane's recent research includes studies of vulnerable youth and young adults, including those experiencing homelessness, and transitioning from foster care or juvenile justice.  His recent work also includes studies of the aging of the adult homeless population in the US, and the potential for increasing housing and support services by strengthening federal entitlements."
-  ],
-  "imageUrl": "images/culhane-2014.jpg"
-} 
+  "imageUrl": "http://127.0.0.1:5500/images/culhane-2014.jpg",
+  "name": null,
+  "positions": [],
+  "biography": []
+}
