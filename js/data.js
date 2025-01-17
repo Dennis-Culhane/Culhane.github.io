@@ -470,17 +470,22 @@ window.ArticlesManager = {
             // 使用文章卡片样式渲染
             container.innerHTML = articles.map(article => {
                 try {
+                    const articleSlug = this.generateSlug(article);
                     return `
-                        <div class="article-card">
+                        <div class="article-card" data-article-slug="${articleSlug}">
                             <h2 class="title-ellipsis">${article.title || 'Untitled'}</h2>
                             <p class="authors-ellipsis">${article.authors || 'Unknown'}</p>
                             <p class="categories-ellipsis">${article.categories ? article.categories.join(', ') : ''}</p>
                             <p class="abstract-clamp">${article.abstract || 'No abstract available'}</p>
-                            <div class="mt-4">
+                            <div class="mt-4 flex gap-4">
                                 <a href="${article.pdfUrl}" target="_blank" 
                                    class="text-blue-600 hover:text-blue-800">
                                    View Article
                                 </a>
+                                <button onclick="copyArticleLink('${articleSlug}')"
+                                    class="hidden copy-link-btn text-gray-600 hover:text-gray-800">
+                                    Copy Link
+                                </button>
                             </div>
                         </div>
                     `;
@@ -604,6 +609,16 @@ window.ArticlesManager = {
             console.error('Error in batch operation:', error);
             throw new Error('Failed to perform batch operation: ' + error.message);
         }
+    },
+
+    // 生成文章 slug
+    generateSlug(article) {
+        const date = article.date ? new Date(article.date).toISOString().split('T')[0] : '';
+        const titleSlug = article.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+        return `${date}-${titleSlug}`;
     }
 };
 

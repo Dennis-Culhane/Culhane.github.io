@@ -153,6 +153,14 @@
         #latest-articles .title-ellipsis {
             font-size: 1.1rem;
         }
+
+        /* 在现有样式后添加 */
+        .copy-link-btn {
+            transition: all 0.3s ease;
+        }
+        .copy-link-btn:hover {
+            opacity: 0.8;
+        }
     </style>
     <script>
         // 全局 cleanText 函数
@@ -309,10 +317,11 @@
                     <p id="modal-authors" class="text-lg text-gray-600 mb-2"></p>
                     <p id="modal-date" class="text-sm text-gray-500 mb-4"></p>
                     <p id="modal-abstract" class="text-gray-700 mb-6"></p>
-                    <div id="modal-download" class="mt-4">
+                    <div id="modal-download" class="mt-4 flex items-center">
                         <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
                             Download
                         </a>
+                        <!-- Copy Link button will be inserted here -->
                     </div>
                 </div>
                 <div id="pdf-preview" class="h-[600px] bg-gray-100 rounded-lg">
@@ -398,33 +407,37 @@
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 20);
 
-            latestContainer.innerHTML = latestArticles.map(article => `
-                <div class="article-card border-l-4 border-blue-500">
-                    <div class="flex items-start">
-                        <div class="flex-1">
-                            <h3 class="title-ellipsis cursor-pointer hover:text-blue-600" 
-                                onclick="showArticleDetail(${JSON.stringify(article).replace(/"/g, '&quot;')})">
-                                ${cleanText(article.title)}
-                            </h3>
-                            <p class="text-sm text-gray-500 mt-1">
-                                ${new Date(article.date).toLocaleDateString()}
-                            </p>
-                            <p class="authors-ellipsis mt-2">${cleanText(article.authors)}</p>
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                ${Array.isArray(article.categories) ? article.categories.map(cat => `
-                                    <span class="article-category">${cat}</span>
-                                `).join('') : ''}
+            latestContainer.innerHTML = latestArticles.map(article => {
+                const slug = ArticlesManager.generateSlug(article);
+                return `
+                    <div class="article-card border-l-4 border-blue-500" data-article-slug="${slug}">
+                        <div class="flex items-start">
+                            <div class="flex-1">
+                                <h3 class="title-ellipsis cursor-pointer hover:text-blue-600" 
+                                    onclick="showArticleDetail(${JSON.stringify(article).replace(/"/g, '&quot;')})">
+                                    ${cleanText(article.title)}
+                                </h3>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    ${new Date(article.date).toLocaleDateString()}
+                                </p>
+                                <p class="authors-ellipsis mt-2">${cleanText(article.authors)}</p>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    ${Array.isArray(article.categories) ? article.categories.map(cat => `
+                                        <span class="article-category">${cat}</span>
+                                    `).join('') : ''}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // 渲染单篇文章
         function renderArticle(article) {
+            const slug = ArticlesManager.generateSlug(article);
             return `
-                <div class="article-card">
+                <div class="article-card" data-article-slug="${slug}">
                     <h2 class="title-ellipsis cursor-pointer hover:text-blue-600" 
                         onclick="showArticleDetail(${JSON.stringify(article).replace(/"/g, '&quot;')})">
                         ${cleanText(article.title)}
@@ -517,7 +530,31 @@
             container.innerHTML = filteredArticles.map(renderArticle).join('');
         }
 
-        // 初始化页面
+        // 修改 handleArticleHash 函数
+        function handleArticleHash() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#article=')) {
+                const slug = hash.replace('#article=', '');
+                const article = allArticles.find(a => ArticlesManager.generateSlug(a) === slug);
+                if (article) {
+                    // 先滚动到文章位置
+                    const articleCard = document.querySelector(`[data-article-slug="${slug}"]`);
+                    if (articleCard) {
+                        articleCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // 等待滚动完成后打开详情页
+                        setTimeout(() => {
+                            showArticleDetail(article);
+                        }, 800); // 给足够的时间让滚动完成
+                    } else {
+                        // 如果找不到文章卡片，直接打开详情页
+                        showArticleDetail(article);
+                    }
+                }
+            }
+        }
+
+        // 修改 initializePage 函数
         async function initializePage() {
             try {
                 const response = await fetch(window.config.getArticlesUrl());
@@ -530,6 +567,8 @@
 
                 // 渲染最新文章
                 renderLatestArticles();
+                // 渲染所有文章
+                filterAndRenderArticles();
 
                 // 提取并渲染分类
                 const categories = new Set();
@@ -577,8 +616,16 @@
                     });
                 }
 
-                // 初始渲染文章列表
-                filterAndRenderArticles();
+                // 等待 DOM 完全更新后处理 hash
+                setTimeout(() => {
+                    if (window.location.hash) {
+                        handleArticleHash();
+                    }
+                }, 300);
+
+                // 添加 hash 变化监听
+                window.removeEventListener('hashchange', handleArticleHash); // 先移除旧的监听器
+                window.addEventListener('hashchange', handleArticleHash);
 
             } catch (error) {
                 console.error('Initialization error:', error);
@@ -599,13 +646,12 @@
                 return text
                     .replace(/Ã/g, '')
                     .replace(/Â/g, '')
-                    .replace(/â/g, '')
                     .replace(/€/g, '')
                     .replace(/™/g, '')
-                    .replace(/\u0080-\u00FF/g, '') // 移除所有扩展 ASCII 字符
+                    .replace(/\u0080-\u00FF/g, '')
                     .replace(/[\uFFFD\uFFFE\uFFFF]/g, '')
-                    .replace(/[^\x00-\x7F]/g, '') // 移除所有非 ASCII 字符
-                    .replace(/\s+/g, ' ') // 将多个空格替换为单个空格
+                    .replace(/[^\x00-\x7F]/g, '')
+                    .replace(/\s+/g, ' ')
                     .trim();
             };
 
@@ -617,29 +663,49 @@
             const downloadLink = document.querySelector('#modal-download a');
             const pdfPreview = document.getElementById('pdf-preview');
             const pdfIframe = document.getElementById('pdf-iframe');
+            const downloadDiv = document.getElementById('modal-download');
             
             if (article.pdfUrl) {
                 // 设置下载链接
                 downloadLink.href = article.pdfUrl;
-                downloadLink.setAttribute('download', ''); // 添加download属性以触发下载
+                downloadLink.setAttribute('download', '');
                 downloadLink.parentElement.style.display = 'block';
                 
                 // 创建一个用于预览的URL
                 const previewUrl = article.pdfUrl.replace('raw.githubusercontent.com', 'github.com')
                     .replace('/main/', '/blob/main/');
                 
-                // 使用GitHub Pages URL进行预览
+                // 使用Google Docs Viewer进行预览
                 const previewSrc = `https://docs.google.com/viewer?url=${encodeURIComponent(article.pdfUrl)}&embedded=true`;
                 
                 // 自动加载预览
                 pdfIframe.src = previewSrc;
                 pdfPreview.style.display = 'block';
                 
-                // 移除之前的Preview按钮（如果存在）
-                const existingPreviewButton = downloadLink.parentElement.querySelector('button');
-                if (existingPreviewButton) {
-                    existingPreviewButton.remove();
-                }
+                // 清理所有现有的复制按钮
+                downloadDiv.querySelectorAll('button').forEach(btn => btn.remove());
+
+                // 生成文章 slug
+                const slug = ArticlesManager.generateSlug(article);
+                
+                // 创建复制链接按钮
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 ml-2';
+                copyBtn.textContent = 'Copy Link';
+
+                // 添加点击事件
+                copyBtn.addEventListener('click', () => {
+                    const url = `${window.location.origin}${window.location.pathname}#article=${slug}`;
+                    navigator.clipboard.writeText(url).then(() => {
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => {
+                            copyBtn.textContent = 'Copy Link';
+                        }, 2000);
+                    });
+                });
+                
+                // 将复制按钮添加到下载按钮旁边
+                downloadDiv.appendChild(copyBtn);
             } else {
                 downloadLink.parentElement.style.display = 'none';
                 pdfPreview.style.display = 'none';
