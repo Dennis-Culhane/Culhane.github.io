@@ -218,7 +218,7 @@
                         </div>
 
                         <div>
-                            <label for="categories" class="block text-sm font-medium text-gray-700">Categories (comma-separated)</label>
+                            <label for="categories" class="block text-sm font-medium text-gray-700">Categories (semicolon-separated)</label>
                             <p class="text-sm text-gray-500 mb-2">Click to add existing categories:</p>
                             <div class="mb-4 flex flex-wrap gap-2 border border-gray-200 rounded-lg p-3 bg-gray-50" id="existing-categories">
                                 <!-- 已有标签将被动态添加到这里 -->
@@ -373,7 +373,7 @@
                 </div>
 
                 <div>
-                    <label for="edit-categories" class="block text-sm font-medium text-gray-700">Categories (comma-separated)</label>
+                    <label for="edit-categories" class="block text-sm font-medium text-gray-700">Categories (semicolon-separated)</label>
                     <input type="text" id="edit-categories" name="categories"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -645,10 +645,10 @@
                     throw new Error('Please provide a file or URL');
                 }
                 
-                // 处理分类
+                // 处理分类：只使用分号分隔
                 const categories = formData.get('categories')
                     ? formData.get('categories')
-                        .split(/[,;|]/)
+                        .split(';')
                         .map(cat => cat.trim())
                         .filter(Boolean)
                     : [];
@@ -763,7 +763,7 @@
                 document.getElementById('edit-title').value = cleanText(article.title);
                 document.getElementById('edit-authors').value = cleanText(article.authors);
                 document.getElementById('edit-date').value = article.date || '';
-                document.getElementById('edit-categories').value = Array.isArray(article.categories) ? article.categories.join(', ') : '';
+                document.getElementById('edit-categories').value = Array.isArray(article.categories) ? article.categories.join('; ') : '';
                 document.getElementById('edit-abstract').value = cleanText(article.abstract || '');
 
                 // 显示模态框
@@ -879,7 +879,7 @@
                     title: cleanText(formData.get('title')),
                     authors: cleanText(formData.get('authors')),
                     date: formData.get('date'),
-                    categories: formData.get('categories') ? cleanText(formData.get('categories')).split(',').map(c => c.trim()).filter(Boolean) : [],
+                    categories: formData.get('categories') ? cleanText(formData.get('categories')).split(';').map(c => c.trim()).filter(Boolean) : [],
                     abstract: cleanText(formData.get('abstract') || '')
                 };
                 
@@ -1220,14 +1220,14 @@
             }
 
             const currentCategories = input.value
-                .split(',')
+                .split(';')
                 .map(cat => cat.trim())
                 .filter(cat => cat.length > 0);
             
             // 检查是否已存在该标签
             if (!currentCategories.includes(category)) {
                 currentCategories.push(category);
-                input.value = currentCategories.join(', ');
+                input.value = currentCategories.join('; ');
             }
         }
 
