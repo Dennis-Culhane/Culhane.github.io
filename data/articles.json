@@ -901,5 +901,16 @@
     ],
     "abstract": "Study objective: Housing instability is prevalent among emergency department (ED) patients and is known to adversely affect health. We aim to determine the incidence and timing of homeless shelter entry after an ED visit among patients who are not currently homeless.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Homeless%20Shelter%20Entry%20in%20the%20Year%20After%20an%20Emergency%20Department%20Visit_%20Results%20from%20a%20Linked%20Data%20Analysis%281%29.pdf"
+  },
+  {
+    "id": "1738572649081",
+    "title": "Homeless Shelter Use and Reincarceration Following Prison Release: Assessing the Risk",
+    "authors": "Stephen Metraux, Dennis P. Culhane",
+    "date": "2004-01-01",
+    "categories": [
+      "Behavioral Health, HIV, and Criminal Justice"
+    ],
+    "abstract": "This paper examines the incidence of and interrelationships between shelter use and reincarceration among a cohort of 48,424 persons who were released from New York State prisons to New York City in 19951998. Results show that, within two years of release, 11.4% of the study group entered a New York City homeless shelter and 32.8% of this group was again imprisoned. Using survival analysis methods, time since prison release and history of residential instability were the most salient risk factors related to shelter use, and shelter use increased the risk of subsequent reincarceration.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Homeless%20Shelter%20Use%20and%20Reincarceration%20Following%20Prison%20Release_%20Assessing%20the%20Risk%281%29.pdf"
   }
 ]
