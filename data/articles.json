@@ -2913,5 +2913,16 @@
     ],
     "abstract": "Read full articles",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/References%2C%20Tables%20%26%20Appendices.pdf"
+  },
+  {
+    "id": "1738573148451",
+    "title": "Persistence of a birth cohort effect in the US among the adult homeless population",
+    "authors": "ThomasByrne;Kelly M.Doran,MD;RandallKuhn,;StephenMetraux,;MaryanneSchretzman,DSW;DanTreglia,;Dennis P.Culhane",
+    "date": "2024-12-26",
+    "categories": [
+      "Population Estimation, Demographic Composition and Trends"
+    ],
+    "abstract": "Older adult homelessness is increasing in the US. Research published more than a decade ago using 1990 to 2010 decennial Census data suggested this is due to a birth cohort effect. Persons born between 1955 and 1965 have composed a disproportionate share of the single adult homeless population since the 1980s. We have thus far lacked information about whether this trend has persisted since 2010. This is a critical gap, as advancing age combined with the complex health needs of older homeless adults, will have serious implications for health care and social service systems. Here, we document the persistence of this cohort effect to the year 2020 and the attendant emergence of over-65 homelessness as a large-scale phenomenon.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Persistence%20of%20a%20birth%20cohort%20effect%20in%20the%20US%20among%20the%20adult%20homeless%20population.pdf"
   }
 ]
