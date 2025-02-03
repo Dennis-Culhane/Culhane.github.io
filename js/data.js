@@ -705,7 +705,7 @@ function formatExcelDate(excelDate) {
 function processExcelData(data) {
     return data.map(row => ({
         // ... 其他字段 ...
-        categories: row.categories ? row.categories.split(',').map(c => c.trim()) : [],
+        categories: row.categories ? row.categories.split(';').map(c => c.trim()) : [],
         // ... 其他字段 ...
     }));
 }

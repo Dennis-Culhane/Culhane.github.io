@@ -280,7 +280,7 @@
                             <label for="excel-file" class="block text-sm font-medium text-gray-700">Excel文件 (.xlsx)</label>
                             <input type="file" id="excel-file" accept=".xlsx" class="mt-1 block w-full py-2 px-3">
                             <p class="mt-2 text-sm text-gray-500">
-                                Excel file should contain these columns: Title, Authors, Date, Categories (comma-separated), Abstract, URL
+                                Excel file should contain these columns: Title, Authors, Date, Categories (semicolon-separated), Abstract, URL
                             </p>
                         </div>
                         <button id="batch-upload-btn" type="button" class="w-full py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700">
@@ -951,7 +951,7 @@
                     if (row.Categories || row.categories) {
                         const categoryStr = (row.Categories || row.categories).toString();
                         categories = categoryStr
-                            .split(/[;]/)  // 支持逗号、分号、竖线分隔
+                            .split(';')  // 只使用分号分隔
                             .map(cat => cat.trim())
                             .filter(Boolean);  // 移除空值
                     }
