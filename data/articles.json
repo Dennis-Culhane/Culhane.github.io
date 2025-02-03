@@ -1,16 +1,5 @@
 [
   {
-    "id": "1735315677017",
-    "title": "Community Research Partners DataSource (Columbus, OH)",
-    "authors": "Dennis P Culhane, University of Pennsylvania",
-    "date": "2003-01-01",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "A web-based tool for creating maps, tables, charts and statistical profiles of neighobrhood indicators in Franklin County and Columbus, Ohio.",
-    "pdfUrl": "http://communityresearchpartners.org/15711.cfm"
-  },
-  {
     "id": "1735315680019",
     "title": "Community-level COVID-19 Homelessness Planning & Response Dashboard",
     "authors": "Thomas Byrne, Boston UniversityRandall Kuhn, University of California Los AngelesDan Treglia, University of PennsylvaniaKenneth Steif, University of PennsylvaniaDennis P Culhane, University of Pennsylvania",
