@@ -1,16 +1,5 @@
 [
   {
-    "id": "1735315664947",
-    "title": "Expanding TANF Program Insights: A Toolkit for State and Local Agencies on How to Access, Link and Analyze Unemployment Insurance Wage Data",
-    "authors": "Edith Yang, Manpower Demonstration Research CorporationSharon Zanti, University of PennsylvaniaRichard Hendra, Manpower Demonstration Research CorporationDennis P Culhane, University of PennsylvaniaZarni Htet, Manpower Demonstration Research Corporation; Adelia Jenkins, University of Pennsylvania; Camille Preel-Dumas, Manpower Demonstration Research Corporation; Electra Small, Manpower Demonstration Research Corporation",
-    "date": "2022-11-22",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "The aim of the toolkit is to offer practical guidance to state and local TANF agencies on how to access, link to, and analyze Unemployment Insurance (UI) wage data from state Departments of Labor for program monitoring, reporting, and evaluation. As such, the toolkit consists of a guidance brief and a companion GitHub repository.The guidance brief is organized into four main sections: (1) a short introduction that lays out the purpose of the toolkit as well as background information on UI wage data and the kinds of research questions that data can be used to answer, (2) a description of common challenges to accessing state UI wage data and strategies to address those challenges, (3) methods for linking UI wage data to other data sources, including emerging advanced methods that are more secure, and (4) instruction for preparing UI wage data for analysis, including how to create common employment-related outcomes that the field has used for decades to measure employment trends, stability, and mobility.",
-    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Expanding%20TANF%20Program%20Insights_%20A%20Toolkit%20for%20State%20and%20Local%20Agencies%20on%20How%20to%20Access%2C%20Link%20and%20Analyze%20Unemployment%20Insurance%20Wage%20Data%281%29.pdf"
-  },
-  {
     "id": "1735315667831",
     "title": "From \"Rebuilding Ireland\" to \"Housing for All\": International and Irish Lessons for Tackling Homelessness",
     "authors": "Isabelle BaptistaDennis P CulhaneNicholas PleaceEoin O'Sulliva",
