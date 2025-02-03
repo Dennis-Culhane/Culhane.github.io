@@ -1,16 +1,5 @@
 [
   {
-    "id": "1735315698626",
-    "title": "Philadelphia Parcelbase",
-    "authors": "Dennis P Culhane, University of Pennsylvania",
-    "date": "1998-01-01",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "A web-based tool for identifying properties and browsing land records in Philadelphia. Password protected.",
-    "pdfUrl": "http://www.cml.upenn.edu/parcelbase"
-  },
-  {
     "id": "1735315701630",
     "title": "Philadelphia Schoolbase",
     "authors": "Dennis P Culhane, University of Pennsylvania",
