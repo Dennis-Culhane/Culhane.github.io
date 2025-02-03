@@ -1,16 +1,5 @@
 [
   {
-    "id": "1735315686029",
-    "title": "Philadelphia Crimebase",
-    "authors": "Dennis P Culhane, University of Pennsylvania",
-    "date": "2000-01-01",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "A web-based tool for creating maps, tables, charts and statistical profiles of Philadelphia's neighborhoods using crime incident data from the Philadelphia Police Department.",
-    "pdfUrl": "http://www.cml.upenn.edu/crimebase"
-  },
-  {
     "id": "1735315688956",
     "title": "Philadelphia Muralbase",
     "authors": "Dennis P Culhane, University of Pennsylvania",
