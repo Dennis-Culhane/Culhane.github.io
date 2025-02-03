@@ -48,5 +48,16 @@
     ],
     "abstract": "In this chapter, we address the epidemiology of homelessness among US Veterans, including a discussion of the methodological challenges relevant to the enumeration and description of homelessness as well as a presentation of current estimates and trends in homelessness among Veterans. The chapter begins with a brief overview of homelessness among Veterans historically, with the remainder of the chapter focusing on the prevalence and incidence of homelessness among Veterans over the past decade. The methodological considerations discussed in this chapter include issues surrounding conceptual definitions of homelessness, implications related to the time frame used for estimates, a comparison between point prevalence, period prevalence, and incidence, and a description of various approaches for using primary and administrative data to estimate the magnitude and composition of homelessness among Veterans. Finally, we present recent national estimates of the prevalence and incidence of homelessness among Veterans, along with a summary of trends over time, and segmentation of estimates by demographic, geographic, and housing status characteristics.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Epidemiology%20of%20Homelessness%20among%20Veterans%281%29.pdf"
+  },
+  {
+    "id": "1738572447214",
+    "title": "The Development of Community Information Systems to Support Neighborhood Change",
+    "authors": "Dennis P Culhane, Bradley Breuer",
+    "date": "2007-01-01",
+    "categories": [
+      "AISP and Integrated Data Systems"
+    ],
+    "abstract": "Community information systems are becoming an increasingly common way to distribute administrative data from local governments. These Web-based systems are using these administrative data to create and distribute valuable community and social indicator data to concerned individuals, social service organizations, community development professionals, and planners. Using the infrastructure provided by Geographic Information Systems (GIS) software and the Internet, these systems distribute important and detailed neighborhood data via maps, tables, and sometimes downloadable files. Some also provide analysis tools for users to manipulate or extract key neighborhood indicator data. Such systems have become popular in some municipal agencies because they are inexpensive and dont require desktop GIS software or expertise (Hillier, McKelvey, and Wernecke, forthcoming).",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Development%20of%20Community%20Information%20Systems%20to%20Support%20Neighborhood%20Change%281%29.pdf"
   }
 ]
