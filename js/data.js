@@ -303,9 +303,9 @@ window.ArticlesManager = {
                 if (Array.isArray(articleData.categories)) {
                     categories = articleData.categories;
                 } else if (typeof articleData.categories === 'string') {
-                    // 处理多种分隔符
+                    // 只使用分号作为分隔符
                     categories = articleData.categories
-                        .split(/[,;|]/)  // 支持逗号、分号、竖线分隔
+                        .split(';')  // 只使用分号分隔
                         .map(cat => cat.trim())
                         .filter(Boolean);  // 移除空值
                 }
