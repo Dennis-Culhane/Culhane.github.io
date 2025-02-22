@@ -2925,5 +2925,16 @@
     "abstract": "Older adult homelessness is increasing in the US. Research published more than a decade ago using 1990 to 2010 decennial Census data suggested this is due to a birth cohort effect. Persons born between 1955 and 1965 have composed a disproportionate share of the single adult homeless population since the 1980s. We have thus far lacked information about whether this trend has persisted since 2010. This is a critical gap, as advancing age combined with the complex health needs of older homeless adults, will have serious implications for health care and social service systems. Here, we document the persistence of this cohort effect to the year 2020 and the attendant emergence of over-65 homelessness as a large-scale phenomenon.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Persistence%20of%20a%20birth%20cohort%20effect%20in%20the%20US%20among%20the%20adult%20homeless%20population.pdf",
     "lastModified": "2025-02-22T18:19:23.048Z"
+  },
+  {
+    "id": "1740249017938",
+    "title": "The stress-buffering effects of received social support on PTSD among Hurricane Ike survivors",
+    "authors": "Chenyi Ma, Tony E. Smith, Dennis P Culhane",
+    "date": "2024-09-05",
+    "categories": [
+      "Behavioral Health, HIV, and Criminal Justice"
+    ],
+    "abstract": "Hurricane Ike made landfall in the Galveston Bay Area in 2008, destroying parts of the built and natural environment, and leaving survivors with a high prevalence of posttraumatic stress disorder (PTSD); however, equally striking was the rapid decline of PTSD among survivors during the 18 months following this disaster. Existing literature suggests that social support tends to either directly or indirectly mitigate such mental health outcomes by moderating disaster-related stress. The present article builds on this to analyze the possible factors contributing to PTSD recovery, including both Ike-related stress suffered by victims and the social support they received over time. We used the Galveston Bay Recovery Study public use file, which includes three waves of interviews for selected victims (n = 658) and employed a series of nested random-effect logistic regression models to test two hypotheses: (a) that social support received by victims buffered the positive relationship between Ike-related stress and PTSD risk and (b) that this buffering effect (BE) diminished over time. Our results provide strong evidence for such BEs ( = 0.03, p = .009), and, through the use of three-way interaction analysis corrected for multiple testing, we show that the observed BE did indeed diminish over time (p = .045). PTSD resulting from disaster-related stress can be substantially reduced by social support interventions. Policy formulation should focus on early social support interventions, given they are most effective in PTSD recovery.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20stress-buffering%20effects%20of%20received%20social%20support%20on%20PTSD%20among%20Hurricane%20Ike%20survivors.pdf"
   }
 ]
