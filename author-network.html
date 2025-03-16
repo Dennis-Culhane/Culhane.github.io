@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dennis P. Culhane - My Collaboration Network</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- D3.js Visualization Library -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Allow cross-domain requests -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' https: data:;">
+    <!-- App Configuration -->
+    <script>
+        // Base Configuration
+        window.GITHUB_CONFIG = {
+            REPO_OWNER: 'Dennis-Culhane',
+            REPO_NAME: 'Culhane.github.io',
+            BRANCH: 'main'
+        };
+        
+        // Config Object
+        window.config = {
+            apiBaseUrl: `https://api.github.com/repos/${window.GITHUB_CONFIG.REPO_OWNER}/${window.GITHUB_CONFIG.REPO_NAME}`,
+            rawBaseUrl: `https://raw.githubusercontent.com/${window.GITHUB_CONFIG.REPO_OWNER}/${window.GITHUB_CONFIG.REPO_NAME}/${window.GITHUB_CONFIG.BRANCH}`,
+            branch: window.GITHUB_CONFIG.BRANCH,
+            articlesPath: 'data/articles.json',
+            pdfStoragePath: 'papers/',
+        
+            // URL to get article data
+            getArticlesUrl() {
+                return `${this.rawBaseUrl}/${this.articlesPath}`;
+            }
+        };
+    </script>
+    <style>
+        .node {
+            cursor: pointer;
+            transition: opacity 0.3s, stroke 0.3s, stroke-width 0.3s;
+        }
+        .node:hover {
+            stroke: #000;
+            stroke-width: 1.5px;
+        }
+        .node--selected {
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            transition: opacity 0.3s, stroke 0.3s, stroke-width 0.3s;
+        }
+        .article-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .article-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .title-ellipsis {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .authors-ellipsis {
+            font-size: 0.875rem;
+            color: #4B5563;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .abstract-clamp {
+            font-size: 0.875rem;
+            color: #6B7280;
+            margin-top: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .article-category {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            background-color: #E5E7EB;
+            color: #374151;
+        }
+        #tooltip {
+            position: absolute;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+        .search-highlight {
+            stroke: #ff8c00;
+            stroke-width: 2px;
+            opacity: 1;
+        }
+        .link-highlight {
+            stroke: #ff8c00;
+            stroke-opacity: 1;
+        }
+        #author-search:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold">Dennis P. Culhane</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html#profile" class="text-gray-500 hover:text-gray-700">Profile</a>
+                    <a href="index.html#articles" class="text-gray-500 hover:text-gray-700">Articles</a>
+                    <a href="author-network.html" class="text-blue-600 font-medium">Collaboration Network</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Collaboration Network</h1>
+        <p class="text-gray-600 mb-8">
+            This visualization shows the collaboration network between me and other researchers. Circle size represents the number of collaborative articles, and lines represent collaboration relationships.
+            Click on or search for an author node to view related collaborative articles.
+        </p>
+
+        <!-- Search Box -->
+        <div class="mb-6">
+            <div class="flex gap-2">
+                <div class="flex-1 relative">
+                    <input type="text" id="author-search" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Search for collaborator..."
+                        onkeypress="if(event.key === 'Enter') searchAuthor()">
+                    <button id="clear-search" 
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"
+                        onclick="clearAuthorSearch()">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <button id="search-btn"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                    onclick="searchAuthor()">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Network Graph -->
+            <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-4 h-[600px]">
+                <div id="network-container" class="w-full h-full"></div>
+                <div id="tooltip"></div>
+            </div>
+
+            <!-- Author Info and Article List -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <h2 id="selected-author" class="text-xl font-bold text-gray-900 mb-2">Dennis P. Culhane</h2>
+                    <p id="collaboration-count" class="text-gray-600 mb-4">Collaborative Articles: Loading...</p>
+                    <div id="author-stats" class="text-sm text-gray-500">
+                        <!-- Author statistics will be displayed here -->
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Collaborative Articles</h3>
+                <div id="collaboration-articles" class="space-y-4 overflow-y-auto max-h-[400px]">
+                    <p class="text-gray-500 text-center">Please click on an author node to view collaborative articles</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article Detail Modal -->
+    <div id="article-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden flex items-center justify-center">
+        <div class="bg-white rounded-lg max-w-5xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="modal-title" class="text-2xl font-bold text-gray-900"></h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="modal-content" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="article-details">
+                    <p id="modal-authors" class="text-lg text-gray-600 mb-2"></p>
+                    <p id="modal-date" class="text-sm text-gray-500 mb-4"></p>
+                    <p id="modal-abstract" class="text-gray-700 mb-6 text-justify"></p>
+                    <div id="modal-download" class="mt-4 flex items-center">
+                        <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                            Download
+                        </a>
+                    </div>
+                </div>
+                <div id="pdf-preview" class="h-[600px] bg-gray-100 rounded-lg">
+                    <iframe id="pdf-iframe" class="w-full h-full rounded-lg" src="about:blank" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Text cleaning function
+        function cleanText(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/[\u0080-\u00ff]/g, '') // Remove extended ASCII characters
+                .replace(/[\u0100-\uffff]/g, '') // Remove other Unicode characters
+                .replace(/[^\x20-\x7E]/g, '') // Keep only basic ASCII printable characters
+                .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
+                .trim();
+        }
+
+        // Generate article slug
+        function generateSlug(article) {
+            const date = article.date ? new Date(article.date).toISOString().split('T')[0] : '';
+            const titleSlug = article.title
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+            return `${date}-${titleSlug}`;
+        }
+
+        // Main author name (center node)
+        const MAIN_AUTHOR = "Dennis P Culhane";
+
+        // Alternative author name formats to check
+        const AUTHOR_ALIASES = [
+            "Dennis P Culhane",
+            "Dennis P. Culhane",
+            "Dennis Culhane",
+            "Culhane, Dennis P",
+            "Culhane, Dennis P.",
+            "Culhane, Dennis"
+        ];
+
+        // Store all article data
+        let allArticles = [];
+        
+        // Store author network data
+        let networkData = {
+            nodes: [],
+            links: []
+        };
+
+        // Store author collaboration data
+        let authorCollaborations = {};
+
+        // Currently selected author
+        let selectedAuthor = MAIN_AUTHOR;
+
+        // Initialize page
+        async function initializePage() {
+            try {
+                // Display loading message
+                document.getElementById('network-container').innerHTML = 
+                    '<p class="text-blue-500 text-center">Loading article data...</p>';
+                
+                console.log('Fetching articles from:', window.config.getArticlesUrl());
+                
+                // Get article data
+                const response = await fetch(window.config.getArticlesUrl());
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch articles: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Validate data
+                if (!Array.isArray(data)) {
+                    throw new Error('Invalid data format: expected an array of articles');
+                }
+                
+                allArticles = data;
+                console.log('Loaded articles:', allArticles.length);
+                
+                // Log a sample of the first article to check format
+                if (allArticles.length > 0) {
+                    console.log('Sample article:', allArticles[0]);
+                    console.log('Sample authors:', allArticles[0].authors);
+                }
+                
+                // Process author data
+                document.getElementById('network-container').innerHTML = 
+                    '<p class="text-blue-500 text-center">Processing author data...</p>';
+                processAuthorData();
+                
+                // Check if we have valid network data
+                if (!networkData.nodes || networkData.nodes.length === 0) {
+                    throw new Error('No author nodes generated from article data');
+                }
+                
+                console.log('Generated nodes:', networkData.nodes.length);
+                console.log('Generated links:', networkData.links.length);
+                
+                // Render network graph
+                document.getElementById('network-container').innerHTML = 
+                    '<p class="text-blue-500 text-center">Rendering network graph...</p>';
+                renderNetworkGraph();
+                
+                // Find main author node
+                const mainAuthorNode = networkData.nodes.find(node => node.isMainAuthor);
+                if (!mainAuthorNode) {
+                    console.warn('Main author node not marked as isMainAuthor');
+                }
+                
+                // Initially display main author's information
+                const mainAuthorName = mainAuthorNode ? mainAuthorNode.id : MAIN_AUTHOR;
+                updateAuthorInfo(mainAuthorName);
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('network-container').innerHTML = 
+                    `<p class="text-red-500 text-center">Error loading data: ${error.message}</p>`;
+                
+                // Also update the author info section
+                document.getElementById('selected-author').textContent = 'Error';
+                document.getElementById('collaboration-count').textContent = 'Could not load author data';
+                document.getElementById('author-stats').innerHTML = '';
+                document.getElementById('collaboration-articles').innerHTML = 
+                    '<p class="text-red-500 text-center">Failed to load article data. Please check the console for details.</p>';
+            }
+        }
+
+        // Process author data, build network graph data
+        function processAuthorData() {
+            try {
+                // Author collaboration count
+                const collaborationCount = {};
+                // Collaboration relationships between authors
+                const collaborationLinks = {};
+                // Mapping of authors to articles
+                authorCollaborations = {};
+                
+                // Check if articles data is valid
+                if (!Array.isArray(allArticles) || allArticles.length === 0) {
+                    console.error('No articles data available');
+                    document.getElementById('network-container').innerHTML = 
+                        '<p class="text-red-500 text-center">No articles data available</p>';
+                    return;
+                }
+                
+                // Function to check if an author matches any of the main author aliases
+                function isMainAuthor(authorName) {
+                    return AUTHOR_ALIASES.some(alias => 
+                        authorName.toLowerCase() === alias.toLowerCase()
+                    );
+                }
+                
+                // Find the most common format of the main author's name in the dataset
+                let mainAuthorNameInData = MAIN_AUTHOR;
+                const authorNameCounts = {};
+                
+                allArticles.forEach(article => {
+                    if (!article.authors) return;
+                    
+                    const authors = article.authors.split(',')
+                        .map(a => a.trim())
+                        .filter(a => a);
+                    
+                    authors.forEach(author => {
+                        if (isMainAuthor(author)) {
+                            authorNameCounts[author] = (authorNameCounts[author] || 0) + 1;
+                        }
+                    });
+                });
+                
+                // Find the most frequent name format
+                let maxCount = 0;
+                Object.entries(authorNameCounts).forEach(([name, count]) => {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        mainAuthorNameInData = name;
+                    }
+                });
+                
+                console.log('Using main author name format:', mainAuthorNameInData);
+                
+                // Iterate through all articles, extract author information
+                allArticles.forEach(article => {
+                    if (!article.authors) return;
+                    
+                    // Split author string into array and clean each author name
+                    const authors = article.authors.split(',')
+                        .map(a => a.trim())
+                        .filter(a => a); // Remove empty strings
+                    
+                    // Check if any of the authors match the main author
+                    const hasMainAuthor = authors.some(author => isMainAuthor(author));
+                    
+                    if (hasMainAuthor) {
+                        // Replace any main author alias with the consistent name format
+                        const normalizedAuthors = authors.map(author => 
+                            isMainAuthor(author) ? mainAuthorNameInData : author
+                        );
+                        
+                        // Increment count for each author
+                        normalizedAuthors.forEach(author => {
+                            if (!collaborationCount[author]) {
+                                collaborationCount[author] = 0;
+                                authorCollaborations[author] = [];
+                            }
+                            collaborationCount[author]++;
+                            authorCollaborations[author].push(article);
+                            
+                            // Establish connection with main author
+                            if (author !== mainAuthorNameInData) {
+                                const linkKey = `${mainAuthorNameInData}-${author}`;
+                                if (!collaborationLinks[linkKey]) {
+                                    collaborationLinks[linkKey] = 0;
+                                }
+                                collaborationLinks[linkKey]++;
+                            }
+                        });
+                    }
+                });
+                
+                // Check if we found the main author
+                if (!collaborationCount[mainAuthorNameInData]) {
+                    console.error(`Main author "${mainAuthorNameInData}" not found in articles`);
+                    document.getElementById('network-container').innerHTML = 
+                        `<p class="text-red-500 text-center">Main author "${mainAuthorNameInData}" not found in articles</p>`;
+                    return;
+                }
+                
+                // Build node data
+                networkData.nodes = Object.keys(collaborationCount).map(author => ({
+                    id: author,
+                    name: author,
+                    value: collaborationCount[author],
+                    isMainAuthor: author === mainAuthorNameInData
+                }));
+                
+                // Build link data with validation
+                networkData.links = [];
+                Object.keys(collaborationLinks).forEach(linkKey => {
+                    const [source, target] = linkKey.split('-');
+                    // Only add links if both source and target exist
+                    if (collaborationCount[source] && collaborationCount[target]) {
+                        networkData.links.push({
+                            source,
+                            target,
+                            value: collaborationLinks[linkKey]
+                        });
+                    }
+                });
+                
+                console.log('Network data:', networkData);
+            } catch (error) {
+                console.error('Error processing author data:', error);
+                document.getElementById('network-container').innerHTML = 
+                    `<p class="text-red-500 text-center">Error processing data: ${error.message}</p>`;
+            }
+        }
+
+        // Render network graph
+        function renderNetworkGraph() {
+            const container = document.getElementById('network-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            try {
+                // Display error if no nodes
+                if (!networkData.nodes || networkData.nodes.length === 0) {
+                    container.innerHTML = '<p class="text-red-500 text-center">No author data available</p>';
+                    return;
+                }
+                
+                // Create SVG
+                const svg = d3.select('#network-container')
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+                
+                // Ensure all links reference valid nodes
+                const nodeIds = new Set(networkData.nodes.map(node => node.id));
+                const validLinks = networkData.links.filter(link => 
+                    typeof link.source === 'object' 
+                        ? nodeIds.has(link.source.id) && nodeIds.has(link.target.id)
+                        : nodeIds.has(link.source) && nodeIds.has(link.target)
+                );
+                
+                // Create force-directed graph
+                const simulation = d3.forceSimulation(networkData.nodes)
+                    .force('link', d3.forceLink(validLinks).id(d => d.id).distance(100))
+                    .force('charge', d3.forceManyBody().strength(-300))
+                    .force('center', d3.forceCenter(width / 2, height / 2))
+                    .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.value) * 5 + 10));
+                
+                // Draw connection lines
+                const link = svg.append('g')
+                    .selectAll('line')
+                    .data(validLinks)
+                    .enter()
+                    .append('line')
+                    .attr('class', 'link')
+                    .attr('stroke-width', d => Math.sqrt(d.value))
+                    .attr('data-source', d => typeof d.source === 'object' ? d.source.id : d.source)
+                    .attr('data-target', d => typeof d.target === 'object' ? d.target.id : d.target);
+                
+                // Create tooltip
+                const tooltip = d3.select('#tooltip');
+                
+                // Draw nodes
+                const node = svg.append('g')
+                    .selectAll('circle')
+                    .data(networkData.nodes)
+                    .enter()
+                    .append('circle')
+                    .attr('class', 'node')
+                    .attr('r', d => Math.sqrt(d.value) * 5 + 5)
+                    .attr('fill', d => d.isMainAuthor ? '#87CEEB' : '#B0E0E6') // Updated colors
+                    .attr('data-id', d => d.id)
+                    .call(d3.drag()
+                        .on('start', dragstarted)
+                        .on('drag', dragged)
+                        .on('end', dragended))
+                    .on('mouseover', function(event, d) {
+                        // Show tooltip
+                        tooltip.style('opacity', 1)
+                            .html(`<div class="font-medium">${d.name}</div><div>Collaborative Articles: ${d.value}</div>`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                        
+                        // Highlight connected nodes and links
+                        highlightConnections(d.id);
+                    })
+                    .on('mouseout', function() {
+                        // Hide tooltip
+                        tooltip.style('opacity', 0);
+                        
+                        // Remove highlights if not in search mode
+                        if (!currentSearchTerm) {
+                            resetHighlights();
+                        }
+                    })
+                    .on('click', function(event, d) {
+                        // Update selected state
+                        d3.selectAll('.node').classed('node--selected', false);
+                        d3.select(this).classed('node--selected', true);
+                        
+                        // Update author info and article list
+                        updateAuthorInfo(d.name);
+                    });
+                
+                // Add author name labels only for nodes with value >= 3 or main author
+                const label = svg.append('g')
+                    .selectAll('text')
+                    .data(networkData.nodes.filter(d => d.value >= 3 || d.isMainAuthor))
+                    .enter()
+                    .append('text')
+                    .attr('dx', d => Math.sqrt(d.value) * 5 + 8)
+                    .attr('dy', '.35em')
+                    .text(d => d.name)
+                    .style('font-size', d => d.isMainAuthor ? '14px' : '12px')
+                    .style('font-weight', d => d.isMainAuthor ? 'bold' : 'normal')
+                    .style('pointer-events', 'none'); // Prevent text from interfering with mouse events
+                
+                // Update force-directed graph
+                simulation.on('tick', () => {
+                    link
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+                    
+                    node
+                        .attr('cx', d => d.x = Math.max(20, Math.min(width - 20, d.x)))
+                        .attr('cy', d => d.y = Math.max(20, Math.min(height - 20, d.y)));
+                    
+                    label
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y);
+                });
+                
+                // Function to highlight connections for a node
+                window.highlightConnections = function(nodeId) {
+                    // Dim all nodes and links
+                    node.style('opacity', 0.3);
+                    link.style('opacity', 0.1);
+                    
+                    // Highlight the selected node
+                    node.filter(d => d.id === nodeId)
+                        .style('opacity', 1)
+                        .style('stroke', '#ff8c00')
+                        .style('stroke-width', 2);
+                    
+                    // Find connected nodes and links
+                    const connectedLinks = link.filter(d => 
+                        (typeof d.source === 'object' ? d.source.id === nodeId : d.source === nodeId) || 
+                        (typeof d.target === 'object' ? d.target.id === nodeId : d.target === nodeId)
+                    );
+                    
+                    // Highlight connected links
+                    connectedLinks
+                        .style('opacity', 1)
+                        .style('stroke', '#ff8c00')
+                        .style('stroke-width', d => Math.sqrt(d.value) + 1);
+                    
+                    // Highlight connected nodes
+                    connectedLinks.each(function(d) {
+                        const connectedId = typeof d.source === 'object' 
+                            ? (d.source.id === nodeId ? d.target.id : d.source.id)
+                            : (d.source === nodeId ? d.target : d.source);
+                        
+                        node.filter(n => n.id === connectedId)
+                            .style('opacity', 1);
+                    });
+                };
+                
+                // Function to reset highlights
+                window.resetHighlights = function() {
+                    node.style('opacity', 1)
+                        .style('stroke', null)
+                        .style('stroke-width', null);
+                    
+                    link.style('opacity', 0.6)
+                        .style('stroke', '#999')
+                        .style('stroke-width', d => Math.sqrt(d.value));
+                    
+                    // Keep selected node highlighted
+                    node.filter('.node--selected')
+                        .style('stroke', '#000')
+                        .style('stroke-width', 2);
+                };
+                
+                // Drag functions
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                }
+                
+                function dragged(event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                }
+                
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                }
+            } catch (error) {
+                console.error('Error rendering network graph:', error);
+                container.innerHTML = `<p class="text-red-500 text-center">Error rendering network: ${error.message}</p>`;
+            }
+        }
+
+        // Update author info and article list
+        function updateAuthorInfo(authorName) {
+            try {
+                selectedAuthor = authorName;
+                
+                // Update author name
+                document.getElementById('selected-author').textContent = authorName;
+                
+                // Update collaboration article count
+                const collaborationCount = authorCollaborations[authorName] ? authorCollaborations[authorName].length : 0;
+                document.getElementById('collaboration-count').textContent = `Collaborative Articles: ${collaborationCount}`;
+                
+                // Function to check if an author is the main author
+                function isMainAuthor(name) {
+                    return networkData.nodes.find(node => node.id === name)?.isMainAuthor || false;
+                }
+                
+                // Update author statistics
+                const authorStats = document.getElementById('author-stats');
+                if (isMainAuthor(authorName)) {
+                    // Calculate main author statistics
+                    const totalCollaborators = networkData.nodes.length - 1; // Subtract self
+                    const totalCollaborations = networkData.links.reduce((sum, link) => sum + link.value, 0);
+                    
+                    authorStats.innerHTML = `
+                        <p class="mb-1">Total Collaborators: ${totalCollaborators}</p>
+                        <p>Total Collaborations: ${totalCollaborations}</p>
+                    `;
+                } else {
+                    // Find collaboration count with main author
+                    const mainAuthorNode = networkData.nodes.find(node => node.isMainAuthor);
+                    if (!mainAuthorNode) {
+                        authorStats.innerHTML = '<p class="text-red-500">Error: Main author not found</p>';
+                        return;
+                    }
+                    
+                    const mainAuthorName = mainAuthorNode.id;
+                    const link = networkData.links.find(l => 
+                        (l.source.id === mainAuthorName && l.target.id === authorName) || 
+                        (l.source.id === authorName && l.target.id === mainAuthorName) ||
+                        (typeof l.source === 'string' && l.source === mainAuthorName && l.target === authorName) ||
+                        (typeof l.source === 'string' && l.source === authorName && l.target === mainAuthorName)
+                    );
+                    const collaborationCount = link ? link.value : 0;
+                    
+                    authorStats.innerHTML = `
+                        <p>Collaborations with ${mainAuthorName}: ${collaborationCount}</p>
+                    `;
+                }
+                
+                // Update article list
+                const articlesContainer = document.getElementById('collaboration-articles');
+                
+                if (!authorCollaborations[authorName] || authorCollaborations[authorName].length === 0) {
+                    articlesContainer.innerHTML = '<p class="text-gray-500 text-center">No collaborative articles found</p>';
+                    return;
+                }
+                
+                // Sort articles by date
+                const sortedArticles = [...authorCollaborations[authorName]]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                articlesContainer.innerHTML = sortedArticles.map(article => `
+                    <div class="article-card cursor-pointer" onclick="showArticleDetail(${JSON.stringify(article).replace(/"/g, '&quot;')})">
+                        <h3 class="title-ellipsis">${cleanText(article.title)}</h3>
+                        <p class="text-sm text-gray-500 mt-1">${new Date(article.date).toLocaleDateString()}</p>
+                        <p class="authors-ellipsis mt-2">${cleanText(article.authors)}</p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            ${Array.isArray(article.categories) ? article.categories.map(cat => `
+                                <span class="article-category">${cat}</span>
+                            `).join('') : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error updating author info:', error);
+                document.getElementById('author-stats').innerHTML = 
+                    `<p class="text-red-500">Error: ${error.message}</p>`;
+                document.getElementById('collaboration-articles').innerHTML = 
+                    '<p class="text-red-500 text-center">Error loading article data</p>';
+            }
+        }
+
+        // Show article details
+        function showArticleDetail(article) {
+            document.getElementById('modal-title').textContent = cleanText(article.title);
+            document.getElementById('modal-authors').textContent = cleanText(article.authors);
+            document.getElementById('modal-date').textContent = new Date(article.date).toLocaleDateString();
+            document.getElementById('modal-abstract').textContent = cleanText(article.abstract);
+            
+            const downloadLink = document.querySelector('#modal-download a');
+            const pdfPreview = document.getElementById('pdf-preview');
+            const pdfIframe = document.getElementById('pdf-iframe');
+            
+            if (article.pdfUrl) {
+                // Set download link
+                downloadLink.href = article.pdfUrl;
+                downloadLink.setAttribute('download', '');
+                downloadLink.parentElement.style.display = 'block';
+                
+                // Use Google Docs Viewer for preview
+                const previewSrc = `https://docs.google.com/viewer?url=${encodeURIComponent(article.pdfUrl)}&embedded=true`;
+                
+                // Automatically load preview
+                pdfIframe.src = previewSrc;
+                pdfPreview.style.display = 'block';
+            } else {
+                downloadLink.parentElement.style.display = 'none';
+                pdfPreview.style.display = 'none';
+            }
+            
+            document.getElementById('article-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('article-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Add ESC key to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Click modal background to close
+        document.getElementById('article-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializePage);
+
+        // Re-render network graph when window size changes
+        window.addEventListener('resize', function() {
+            renderNetworkGraph();
+        });
+
+        // Current search term
+        let currentSearchTerm = '';
+
+        // Search for author
+        function searchAuthor() {
+            const searchInput = document.getElementById('author-search');
+            const clearButton = document.getElementById('clear-search');
+            currentSearchTerm = searchInput.value.trim().toLowerCase();
+            
+            // Show/hide clear button
+            clearButton.style.display = currentSearchTerm ? 'block' : 'none';
+            
+            if (!currentSearchTerm) {
+                resetHighlights();
+                return;
+            }
+            
+            // Find matching authors
+            const matchingNodes = networkData.nodes.filter(node => 
+                node.name.toLowerCase().includes(currentSearchTerm)
+            );
+            
+            if (matchingNodes.length === 0) {
+                alert('No authors found matching your search term.');
+                return;
+            }
+            
+            // Dim all nodes and links
+            d3.selectAll('.node').style('opacity', 0.3);
+            d3.selectAll('.link').style('opacity', 0.1);
+            
+            // Highlight matching nodes
+            matchingNodes.forEach(node => {
+                // Highlight the node
+                d3.selectAll('.node')
+                    .filter(d => d.id === node.id)
+                    .style('opacity', 1)
+                    .style('stroke', '#ff8c00')
+                    .style('stroke-width', 2);
+                
+                // Find and highlight connected links and nodes
+                const connectedLinks = d3.selectAll('.link').filter(d => 
+                    (typeof d.source === 'object' ? d.source.id === node.id : d.source === node.id) || 
+                    (typeof d.target === 'object' ? d.target.id === node.id : d.target === node.id)
+                );
+                
+                connectedLinks
+                    .style('opacity', 1)
+                    .style('stroke', '#ff8c00')
+                    .style('stroke-width', d => Math.sqrt(d.value) + 1);
+                
+                // Highlight connected nodes
+                connectedLinks.each(function(d) {
+                    const connectedId = typeof d.source === 'object' 
+                        ? (d.source.id === node.id ? d.target.id : d.source.id)
+                        : (d.source === node.id ? d.target : d.source);
+                    
+                    d3.selectAll('.node')
+                        .filter(n => n.id === connectedId)
+                        .style('opacity', 1);
+                });
+            });
+            
+            // If there's exactly one match, select it and show its articles
+            if (matchingNodes.length === 1) {
+                updateAuthorInfo(matchingNodes[0].name);
+                
+                // Update selected state
+                d3.selectAll('.node').classed('node--selected', false);
+                d3.selectAll('.node')
+                    .filter(d => d.id === matchingNodes[0].id)
+                    .classed('node--selected', true);
+            }
+        }
+
+        // Clear search
+        function clearAuthorSearch() {
+            const searchInput = document.getElementById('author-search');
+            const clearButton = document.getElementById('clear-search');
+            searchInput.value = '';
+            currentSearchTerm = '';
+            clearButton.style.display = 'none';
+            
+            // Reset highlights
+            resetHighlights();
+        }
+    </script>
+</body>
+</html> 
