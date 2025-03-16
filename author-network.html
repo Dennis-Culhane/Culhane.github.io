@@ -124,6 +124,18 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
+        /* 添加动画效果 */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -207,29 +219,48 @@
     </div>
 
     <!-- Article Detail Modal -->
-    <div id="article-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden flex items-center justify-center">
-        <div class="bg-white rounded-lg max-w-5xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+    <div id="article-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden flex items-center justify-center z-[1000]">
+        <div class="bg-white rounded-lg max-w-5xl w-full mx-4 p-4 sm:p-6 max-h-[90vh] overflow-y-auto z-[1001]">
             <div class="flex justify-between items-start mb-4">
-                <h2 id="modal-title" class="text-2xl font-bold text-gray-900"></h2>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                <h2 id="modal-title" class="text-xl sm:text-2xl font-bold text-gray-900 pr-8"></h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 transition-colors absolute top-4 right-4">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-            <div id="modal-content" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div id="modal-content" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <div class="article-details">
-                    <p id="modal-authors" class="text-lg text-gray-600 mb-2"></p>
-                    <p id="modal-date" class="text-sm text-gray-500 mb-4"></p>
-                    <p id="modal-abstract" class="text-gray-700 mb-6 text-justify"></p>
-                    <div id="modal-download" class="mt-4 flex items-center">
-                        <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    <p id="modal-authors" class="text-base sm:text-lg text-gray-600 mb-2"></p>
+                    <p id="modal-date" class="text-xs sm:text-sm text-gray-500 mb-4"></p>
+                    <div id="modal-categories" class="flex flex-wrap gap-2 mb-6 z-[1002]"></div>
+                    <p id="modal-abstract" class="text-gray-700 mb-6 text-justify text-sm sm:text-base"></p>
+                    <div id="modal-download" class="mt-4 flex flex-col sm:flex-row items-start sm:items-center">
+                        <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-all w-full sm:w-auto justify-center" download>
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
                             Download
                         </a>
+                        <!-- Copy Link button will be inserted here -->
+                    </div>
+                    
+                    <!-- 相关文章部分 -->
+                    <div id="related-articles" class="mt-8">
+                        <h3 class="text-lg font-semibold mb-3">Related Articles</h3>
+                        <div id="related-articles-list" class="space-y-3">
+                            <!-- 相关文章将在这里动态添加 -->
+                        </div>
                     </div>
                 </div>
-                <div id="pdf-preview" class="h-[600px] bg-gray-100 rounded-lg">
-                    <iframe id="pdf-iframe" class="w-full h-full rounded-lg" src="about:blank" frameborder="0"></iframe>
+                <div id="pdf-preview" class="h-[600px] bg-gray-100 rounded-lg shadow-inner overflow-hidden">
+                    <div class="flex items-center justify-center h-full" id="pdf-loading">
+                        <div class="animate-pulse-slow">
+                            <p class="text-center mt-2 text-blue-600">Loading PDF...</p>
+                        </div>
+                    </div>
+                    <!-- Google Docs Viewer iframe -->
+                    <iframe id="pdf-iframe" class="w-full h-full rounded-lg" src="about:blank" frameborder="0" allowfullscreen></iframe>
                 </div>
             </div>
         </div>
@@ -771,40 +802,146 @@
 
         // Show article details
         function showArticleDetail(article) {
-            document.getElementById('modal-title').textContent = cleanText(article.title);
-            document.getElementById('modal-authors').textContent = cleanText(article.authors);
-            document.getElementById('modal-date').textContent = new Date(article.date).toLocaleDateString();
-            document.getElementById('modal-abstract').textContent = cleanText(article.abstract);
-            
+            // 更新模态框内容
+            const titleElement = document.getElementById('modal-title');
+            const authorsElement = document.getElementById('modal-authors');
+            const dateElement = document.getElementById('modal-date');
+            const abstractElement = document.getElementById('modal-abstract');
+            const categoriesContainer = document.getElementById('modal-categories');
             const downloadLink = document.querySelector('#modal-download a');
-            const pdfPreview = document.getElementById('pdf-preview');
             const pdfIframe = document.getElementById('pdf-iframe');
+            const pdfLoading = document.getElementById('pdf-loading');
             
-            if (article.pdfUrl) {
-                // Set download link
-                downloadLink.href = article.pdfUrl;
-                downloadLink.setAttribute('download', '');
-                downloadLink.parentElement.style.display = 'block';
-                
-                // Use Google Docs Viewer for preview
-                const previewSrc = `https://docs.google.com/viewer?url=${encodeURIComponent(article.pdfUrl)}&embedded=true`;
-                
-                // Automatically load preview
-                pdfIframe.src = previewSrc;
-                pdfPreview.style.display = 'block';
-            } else {
-                downloadLink.parentElement.style.display = 'none';
-                pdfPreview.style.display = 'none';
+            // 检查所有必要的元素是否存在
+            if (!titleElement || !authorsElement || !dateElement || !abstractElement || 
+                !categoriesContainer || !downloadLink || !pdfIframe || !pdfLoading) {
+                console.error('One or more modal elements not found');
+                return;
             }
             
+            titleElement.textContent = cleanText(article.title);
+            authorsElement.textContent = Array.isArray(article.authors) ? article.authors.join(', ') : article.authors;
+            dateElement.textContent = new Date(article.date).toLocaleDateString('en-US');
+            abstractElement.textContent = cleanText(article.abstract || 'No abstract available');
+            
+            // 更新分类标签
+            categoriesContainer.innerHTML = '';
+            if (Array.isArray(article.categories)) {
+                article.categories.forEach(category => {
+                    const tag = document.createElement('span');
+                    tag.className = 'article-category bg-blue-600 text-white px-2 py-1 rounded-md';
+                    tag.textContent = category;
+                    categoriesContainer.appendChild(tag);
+                });
+            }
+            
+            // 预览PDF
+            if (article.pdfUrl) {
+                console.log('Loading PDF from URL:', article.pdfUrl);
+                
+                // 显示加载消息
+                pdfIframe.style.display = 'none';
+                pdfLoading.style.display = 'flex';
+                pdfLoading.innerHTML = '<div class="animate-pulse-slow"><p class="text-center mt-2 text-blue-600">Loading PDF...</p></div>';
+                
+                // 构建完整的PDF URL
+                let fullPdfUrl = article.pdfUrl;
+                if (!fullPdfUrl.startsWith('http')) {
+                    // 如果是相对路径，添加基础URL
+                    fullPdfUrl = `${window.config.rawBaseUrl}/${window.config.pdfStoragePath}${article.pdfUrl}`;
+                }
+                console.log('Full PDF URL:', fullPdfUrl);
+                
+                // 更新下载链接
+                downloadLink.href = fullPdfUrl;
+                downloadLink.setAttribute('download', article.title || 'document.pdf');
+                downloadLink.style.display = 'inline-flex';
+                
+                // 使用Google Docs Viewer预览PDF
+                tryPreviewPDF(fullPdfUrl, pdfIframe, pdfLoading);
+            } else {
+                // 没有PDF可用
+                downloadLink.style.display = 'none';
+                pdfIframe.style.display = 'none';
+                pdfLoading.style.display = 'flex';
+                pdfLoading.innerHTML = '<p class="text-center text-gray-500">No PDF available for this article</p>';
+            }
+            
+            // 添加复制链接按钮
+            const downloadContainer = document.getElementById('modal-download');
+            if (downloadContainer) {
+                // 移除旧的复制按钮
+                const oldCopyBtn = downloadContainer.querySelector('.copy-link-btn');
+                if (oldCopyBtn) oldCopyBtn.remove();
+                
+                // 创建新的复制按钮
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-link-btn ml-2 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-all';
+                copyBtn.innerHTML = `
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    Copy Link
+                `;
+                
+                // 添加复制功能
+                copyBtn.addEventListener('click', function() {
+                    const slug = generateSlug(article);
+                    const url = `${window.location.origin}${window.location.pathname}?article=${slug}`;
+                    
+                    navigator.clipboard.writeText(url).then(() => {
+                        copyBtn.innerHTML = `
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Copied!
+                        `;
+                        setTimeout(() => {
+                            copyBtn.innerHTML = `
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                </svg>
+                                Copy Link
+                            `;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy link:', err);
+                        copyBtn.textContent = 'Copy failed';
+                    });
+                });
+                
+                downloadContainer.appendChild(copyBtn);
+            }
+            
+            // 查找并显示相关文章
+            findRelatedArticles(article);
+            
+            // 显示模态框
             document.getElementById('article-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
         }
 
         // Close modal
         function closeModal() {
-            document.getElementById('article-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
+            const modal = document.getElementById('article-modal');
+            if (!modal) return;
+            
+            modal.classList.add('hidden');
+            
+            // 清除iframe内容，避免下次打开时出现问题
+            const pdfIframe = document.getElementById('pdf-iframe');
+            if (pdfIframe) {
+                pdfIframe.src = 'about:blank';
+            }
+            
+            // 重置加载状态
+            const pdfLoading = document.getElementById('pdf-loading');
+            if (pdfLoading) {
+                pdfLoading.style.display = 'flex';
+                pdfLoading.innerHTML = '<div class="animate-pulse-slow"><p class="text-center mt-2 text-blue-600">Loading PDF...</p></div>';
+            }
+            
+            document.body.style.overflow = ''; // 恢复背景滚动
         }
 
         // Add ESC key to close modal
@@ -914,6 +1051,151 @@
             
             // Reset highlights
             resetHighlights();
+        }
+
+        // 查找相关文章
+        function findRelatedArticles(article) {
+            try {
+                const relatedContainer = document.getElementById('related-articles-list');
+                if (!relatedContainer) return;
+                
+                // 如果没有文章数据，显示提示信息
+                if (!Array.isArray(allArticles) || allArticles.length === 0) {
+                    relatedContainer.innerHTML = '<p class="text-gray-500">No related articles available</p>';
+                    return;
+                }
+                
+                // 获取当前文章的分类
+                const categories = Array.isArray(article.categories) ? article.categories : [];
+                
+                // 如果没有分类，尝试使用作者来查找相关文章
+                if (categories.length === 0) {
+                    // 获取当前文章的作者
+                    const authors = article.authors ? 
+                        (Array.isArray(article.authors) ? article.authors : article.authors.split(',').map(a => a.trim())) 
+                        : [];
+                    
+                    // 查找相同作者的其他文章
+                    const relatedArticles = allArticles
+                        .filter(a => a.id !== article.id) // 排除当前文章
+                        .filter(a => {
+                            const articleAuthors = a.authors ? 
+                                (Array.isArray(a.authors) ? a.authors : a.authors.split(',').map(a => a.trim())) 
+                                : [];
+                            
+                            // 检查是否有共同作者
+                            return authors.some(author => 
+                                articleAuthors.some(a => a.toLowerCase().includes(author.toLowerCase()))
+                            );
+                        })
+                        .sort((a, b) => new Date(b.date) - new Date(a.date)) // 按日期排序
+                        .slice(0, 3); // 最多显示3篇
+                    
+                    if (relatedArticles.length === 0) {
+                        relatedContainer.innerHTML = '<p class="text-gray-500">No related articles found</p>';
+                        return;
+                    }
+                    
+                    // 渲染相关文章
+                    relatedContainer.innerHTML = relatedArticles.map(article => `
+                        <div class="border-l-2 border-blue-300 pl-3 py-1">
+                            <h4 class="font-medium text-blue-700 cursor-pointer hover:text-blue-900" 
+                                onclick="showArticleDetail(${JSON.stringify(article).replace(/"/g, '&quot;')})">
+                                ${cleanText(article.title || '')}
+                            </h4>
+                            <p class="text-xs text-gray-500">${article.date ? new Date(article.date).toLocaleDateString('en-US') : 'No date'}</p>
+                        </div>
+                    `).join('');
+                    return;
+                }
+                
+                // 基于分类查找相关文章
+                const relatedArticles = allArticles
+                    .filter(a => a.id !== article.id) // 排除当前文章
+                    .filter(a => {
+                        const articleCategories = Array.isArray(a.categories) ? a.categories : [];
+                        // 检查是否有共同分类
+                        return categories.some(category => 
+                            articleCategories.includes(category)
+                        );
+                    })
+                    .sort((a, b) => {
+                        // 计算共同分类数量
+                        const aCommonCategories = Array.isArray(a.categories) ? 
+                            a.categories.filter(c => categories.includes(c)).length : 0;
+                        const bCommonCategories = Array.isArray(b.categories) ? 
+                            b.categories.filter(c => categories.includes(c)).length : 0;
+                        
+                        // 首先按共同分类数量排序
+                        if (bCommonCategories !== aCommonCategories) {
+                            return bCommonCategories - aCommonCategories;
+                        }
+                        
+                        // 其次按日期排序
+                        return new Date(b.date) - new Date(a.date);
+                    })
+                    .slice(0, 3); // 最多显示3篇
+                
+                if (relatedArticles.length === 0) {
+                    relatedContainer.innerHTML = '<p class="text-gray-500">No related articles found</p>';
+                    return;
+                }
+                
+                // 渲染相关文章
+                relatedContainer.innerHTML = relatedArticles.map(article => `
+                    <div class="border-l-2 border-blue-300 pl-3 py-1">
+                        <h4 class="font-medium text-blue-700 cursor-pointer hover:text-blue-900" 
+                            onclick="showArticleDetail(${JSON.stringify(article).replace(/"/g, '&quot;')})">
+                            ${cleanText(article.title || '')}
+                        </h4>
+                        <p class="text-xs text-gray-500">${article.date ? new Date(article.date).toLocaleDateString('en-US') : 'No date'}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error finding related articles:', error);
+                const relatedContainer = document.getElementById('related-articles-list');
+                if (relatedContainer) {
+                    relatedContainer.innerHTML = '<p class="text-red-500">Error finding related articles</p>';
+                }
+            }
+        }
+
+        // 尝试预览PDF
+        function tryPreviewPDF(pdfUrl, pdfIframe, pdfLoading) {
+            // 设置iframe加载事件
+            pdfIframe.onload = function() {
+                // 检查是否成功加载
+                setTimeout(() => {
+                    try {
+                        // 如果iframe内容为空或者显示错误，则显示错误消息
+                        if (pdfIframe.contentDocument && 
+                            (pdfIframe.contentDocument.body.innerHTML === '' || 
+                             pdfIframe.contentDocument.body.innerHTML.includes('error'))) {
+                            pdfLoading.style.display = 'flex';
+                            pdfLoading.innerHTML = '<p class="text-center text-gray-500">Unable to preview PDF. Please download to view.</p>';
+                            pdfIframe.style.display = 'none';
+                        } else {
+                            // 成功加载
+                            pdfLoading.style.display = 'none';
+                            pdfIframe.style.display = 'block';
+                        }
+                    } catch (e) {
+                        // 如果无法访问iframe内容（跨域问题），假设加载成功
+                        pdfLoading.style.display = 'none';
+                        pdfIframe.style.display = 'block';
+                    }
+                }, 2000); // 给予足够的时间加载
+            };
+            
+            // 设置错误处理
+            pdfIframe.onerror = function() {
+                pdfLoading.style.display = 'flex';
+                pdfLoading.innerHTML = '<p class="text-center text-gray-500">Error loading PDF preview. Please download to view.</p>';
+                pdfIframe.style.display = 'none';
+            };
+            
+            // 加载PDF
+            pdfIframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
         }
     </script>
 </body>
