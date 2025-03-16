@@ -1,0 +1,223 @@
+{
+  "summary": {
+    "totalVisits": 5840,
+    "totalDownloads": 1400,
+    "avgReadTime": "4分32秒",
+    "maxReadTime": "12分18秒"
+  },
+  "countries": [
+    {
+      "code": "US",
+      "name": "美国",
+      "visits": 1250,
+      "downloads": 320
+    },
+    {
+      "code": "CN",
+      "name": "中国",
+      "visits": 980,
+      "downloads": 210
+    },
+    {
+      "code": "GB",
+      "name": "英国",
+      "visits": 750,
+      "downloads": 180
+    },
+    {
+      "code": "CA",
+      "name": "加拿大",
+      "visits": 620,
+      "downloads": 150
+    },
+    {
+      "code": "AU",
+      "name": "澳大利亚",
+      "visits": 480,
+      "downloads": 120
+    },
+    {
+      "code": "DE",
+      "name": "德国",
+      "visits": 420,
+      "downloads": 100
+    },
+    {
+      "code": "FR",
+      "name": "法国",
+      "visits": 380,
+      "downloads": 90
+    },
+    {
+      "code": "JP",
+      "name": "日本",
+      "visits": 350,
+      "downloads": 85
+    },
+    {
+      "code": "BR",
+      "name": "巴西",
+      "visits": 320,
+      "downloads": 75
+    },
+    {
+      "code": "IN",
+      "name": "印度",
+      "visits": 290,
+      "downloads": 70
+    }
+  ],
+  "dailyVisits": [
+    {
+      "date": "2025-02-15",
+      "visits": 53,
+      "downloads": 12
+    },
+    {
+      "date": "2025-02-16",
+      "visits": 41,
+      "downloads": 11
+    },
+    {
+      "date": "2025-02-17",
+      "visits": 48,
+      "downloads": 11
+    },
+    {
+      "date": "2025-02-18",
+      "visits": 62,
+      "downloads": 17
+    },
+    {
+      "date": "2025-02-19",
+      "visits": 64,
+      "downloads": 18
+    },
+    {
+      "date": "2025-02-20",
+      "visits": 56,
+      "downloads": 13
+    },
+    {
+      "date": "2025-02-21",
+      "visits": 56,
+      "downloads": 12
+    },
+    {
+      "date": "2025-02-22",
+      "visits": 57,
+      "downloads": 15
+    },
+    {
+      "date": "2025-02-23",
+      "visits": 55,
+      "downloads": 13
+    },
+    {
+      "date": "2025-02-24",
+      "visits": 75,
+      "downloads": 20
+    },
+    {
+      "date": "2025-02-25",
+      "visits": 73,
+      "downloads": 17
+    },
+    {
+      "date": "2025-02-26",
+      "visits": 62,
+      "downloads": 13
+    },
+    {
+      "date": "2025-02-27",
+      "visits": 60,
+      "downloads": 15
+    },
+    {
+      "date": "2025-02-28",
+      "visits": 66,
+      "downloads": 15
+    },
+    {
+      "date": "2025-03-01",
+      "visits": 57,
+      "downloads": 15
+    },
+    {
+      "date": "2025-03-02",
+      "visits": 67,
+      "downloads": 14
+    },
+    {
+      "date": "2025-03-03",
+      "visits": 63,
+      "downloads": 17
+    },
+    {
+      "date": "2025-03-04",
+      "visits": 87,
+      "downloads": 21
+    },
+    {
+      "date": "2025-03-05",
+      "visits": 65,
+      "downloads": 16
+    },
+    {
+      "date": "2025-03-06",
+      "visits": 74,
+      "downloads": 20
+    },
+    {
+      "date": "2025-03-07",
+      "visits": 64,
+      "downloads": 16
+    },
+    {
+      "date": "2025-03-08",
+      "visits": 90,
+      "downloads": 24
+    },
+    {
+      "date": "2025-03-09",
+      "visits": 94,
+      "downloads": 24
+    },
+    {
+      "date": "2025-03-10",
+      "visits": 83,
+      "downloads": 22
+    },
+    {
+      "date": "2025-03-11",
+      "visits": 92,
+      "downloads": 24
+    },
+    {
+      "date": "2025-03-12",
+      "visits": 72,
+      "downloads": 14
+    },
+    {
+      "date": "2025-03-13",
+      "visits": 101,
+      "downloads": 27
+    },
+    {
+      "date": "2025-03-14",
+      "visits": 98,
+      "downloads": 23
+    },
+    {
+      "date": "2025-03-15",
+      "visits": 104,
+      "downloads": 27
+    },
+    {
+      "date": "2025-03-16",
+      "visits": 75,
+      "downloads": 18
+    }
+  ],
+  "articleStats": []
+}
