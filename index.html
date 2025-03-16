@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>Dennis Culhane - Selected Works</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,6 +76,7 @@
     <!-- 依赖库 -->
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js" defer></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
@@ -83,6 +88,13 @@
         // 确保在页面加载完成后初始化所有功能
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // 初始化FastClick减少移动端点击延迟
+                if ('addEventListener' in document) {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        FastClick.attach(document.body);
+                    }, false);
+                }
+                
                 // 初始化AOS动画库
                 AOS.init({
                     duration: 800,
@@ -114,6 +126,10 @@
                 
                 // 初始渲染所有文章
                 filterAndRenderArticles();
+                
+                // 检查URL参数，如果有article参数则自动打开对应文章
+                checkUrlForArticle();
+                
                 } catch (articleError) {
                     console.error('Error loading articles:', articleError);
                     const container = document.getElementById('articles-list');
@@ -137,6 +153,9 @@
                 
                 // 添加返回顶部按钮
                 addBackToTopButton();
+                
+                // 初始化移动端触摸事件
+                initMobileTouchEvents();
 
             } catch (error) {
                 console.error('Initialization error:', error);
@@ -146,6 +165,59 @@
                 }
             }
         });
+        
+        // 检查URL参数并自动打开文章
+        function checkUrlForArticle() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleSlug = urlParams.get('article');
+            
+            if (articleSlug) {
+                // 查找对应的文章
+                const article = findArticleBySlug(articleSlug);
+                
+                if (article) {
+                    // 延迟一点执行，确保DOM已完全加载
+                    setTimeout(() => {
+                        // 查找文章元素
+                        const articleElement = document.querySelector(`.article-card[data-article-slug="${articleSlug}"]`);
+                        
+                        if (articleElement) {
+                            // 滚动到文章位置
+                            articleElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            
+                            // 高亮显示文章
+                            articleElement.classList.add('highlight-article');
+                            
+                            // 打开文章详情
+                            setTimeout(() => {
+                                showArticleDetail(article.id);
+                                
+                                // 移除高亮效果
+                                setTimeout(() => {
+                                    articleElement.classList.remove('highlight-article');
+                                }, 2000);
+                            }, 800);
+                        } else {
+                            console.error('Article element not found in DOM');
+                            // 直接打开文章详情
+                            showArticleDetail(article.id);
+                        }
+                    }, 500);
+                } else {
+                    console.error('Article not found with slug:', articleSlug);
+                }
+            }
+        }
+        
+        // 根据slug查找文章
+        function findArticleBySlug(slug) {
+            if (!Array.isArray(allArticles)) return null;
+            
+            return allArticles.find(article => {
+                const articleSlug = ArticlesManager.generateSlug(article);
+                return articleSlug === slug;
+            });
+        }
         
         // 添加滚动进度条
         function addScrollProgressBar() {
@@ -205,6 +277,79 @@
                 darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
             });
         }
+        
+        // 初始化移动端触摸事件
+        function initMobileTouchEvents() {
+            // 检测是否为移动设备
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (!isMobile) return;
+            
+            // 添加触摸反馈效果
+            const touchElements = document.querySelectorAll('button, a, .article-card, .category-tag');
+            touchElements.forEach(el => {
+                el.addEventListener('touchstart', function() {
+                    this.classList.add('touch-active');
+                }, { passive: true });
+                
+                el.addEventListener('touchend', function() {
+                    this.classList.remove('touch-active');
+                }, { passive: true });
+                
+                el.addEventListener('touchcancel', function() {
+                    this.classList.remove('touch-active');
+                }, { passive: true });
+            });
+            
+            // 添加滑动关闭模态框功能
+            const articleModal = document.getElementById('article-modal');
+            const followModal = document.getElementById('follow-modal');
+            
+            if (articleModal) {
+                let startY = 0;
+                let currentY = 0;
+                
+                articleModal.addEventListener('touchstart', function(e) {
+                    if (e.target === articleModal) {
+                        startY = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+                
+                articleModal.addEventListener('touchmove', function(e) {
+                    if (e.target === articleModal) {
+                        currentY = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+                
+                articleModal.addEventListener('touchend', function(e) {
+                    if (e.target === articleModal && currentY - startY > 100) {
+                        closeModal();
+                    }
+                }, { passive: true });
+            }
+            
+            if (followModal) {
+                let startY = 0;
+                let currentY = 0;
+                
+                followModal.addEventListener('touchstart', function(e) {
+                    if (e.target === followModal) {
+                        startY = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+                
+                followModal.addEventListener('touchmove', function(e) {
+                    if (e.target === followModal) {
+                        currentY = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+                
+                followModal.addEventListener('touchend', function(e) {
+                    if (e.target === followModal && currentY - startY > 100) {
+                        closeFollowModal();
+                    }
+                }, { passive: true });
+            }
+        }
     </script>
     <style>
         /* 基础样式优化 */
@@ -220,6 +365,55 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --transition-normal: all 0.3s ease;
+        }
+        
+        /* 文章高亮效果 */
+        @keyframes pulse-highlight {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+        }
+        
+        .highlight-article {
+            animation: pulse-highlight 1.5s ease-in-out infinite;
+            border: 2px solid var(--primary-color) !important;
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        
+        /* 触摸反馈样式 */
+        .touch-active {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+        
+        /* 移动端输入优化 */
+        input, textarea, select {
+            font-size: 16px !important; /* 防止iOS缩放 */
+        }
+        
+        /* 移动端点击区域优化 */
+        button, a, .category-tag, .article-card {
+            touch-action: manipulation;
+        }
+        
+        /* 移动端滚动优化 */
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* 移动端模态框滑动关闭提示 */
+        @media (max-width: 768px) {
+            #article-modal::after, #follow-modal::after {
+                content: '↓ 向下滑动关闭';
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: white;
+                font-size: 12px;
+                opacity: 0.7;
+                pointer-events: none;
+            }
         }
         
         /* 深色模式变量 */
@@ -581,6 +775,118 @@
                 width: 35px;
                 height: 35px;
             }
+            
+            /* 手机端导航栏优化 */
+            nav .flex.items-center.space-x-6 {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+                padding: 8px 0;
+            }
+            
+            nav .flex.justify-between.h-16 {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 0;
+            }
+            
+            nav .flex-shrink-0.flex.items-center {
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            
+            /* 手机端搜索框优化 */
+            #search-input {
+                font-size: 16px; /* 防止iOS自动缩放 */
+                padding: 10px;
+            }
+            
+            /* 手机端分类标签优化 */
+            .category-tag {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                margin-bottom: 5px;
+            }
+            
+            /* 手机端文章卡片优化 */
+            .title-ellipsis {
+                font-size: 1.1rem;
+            }
+            
+            /* 手机端模态框优化 */
+            #article-modal .bg-white, #follow-modal .bg-white {
+                width: 95%;
+                max-height: 85vh;
+                margin: 0 auto;
+                padding: 15px;
+            }
+            
+            #modal-content {
+                grid-template-columns: 1fr !important;
+            }
+            
+            #pdf-preview {
+                height: 400px !important;
+                margin-top: 20px;
+            }
+            
+            /* 手机端页脚优化 */
+            footer .grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px;
+            }
+        }
+        
+        /* 小屏幕手机特别优化 */
+        @media (max-width: 480px) {
+            .article-card {
+                padding: 1rem;
+            }
+            
+            #profile-image {
+                max-width: 200px;
+            }
+            
+            .title-ellipsis {
+                font-size: 1rem;
+            }
+            
+            .authors-ellipsis, .categories-ellipsis {
+                font-size: 0.8rem;
+            }
+            
+            /* 超小屏幕导航栏 */
+            nav h1.text-xl {
+                font-size: 1.1rem;
+            }
+            
+            nav a {
+                font-size: 0.9rem;
+                padding: 5px;
+            }
+            
+            /* 超小屏幕按钮优化 */
+            #follow-btn, #search-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            
+            /* 超小屏幕PDF预览 */
+            #pdf-preview {
+                height: 300px !important;
+            }
+            
+            /* 移动端模态框按钮优化 */
+            #modal-download {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            #modal-download .copy-link-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
         }
         
         /* 动画类 */
@@ -624,6 +930,72 @@
         #modal-categories .article-category:hover {
             background-color: #0369a1;  /* primary-700 的具体颜色值 */
         }
+        
+        /* 移动端菜单按钮 */
+        .mobile-menu-btn {
+            display: none;
+        }
+        
+        /* 移动端导航菜单 */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-card);
+            z-index: 200;
+            padding: 20px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-nav.active {
+            transform: translateX(0);
+        }
+        
+        .mobile-nav-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            margin-top: 60px;
+        }
+        
+        .mobile-nav-links a {
+            padding: 15px 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.3);
+        }
+        
+        @media (max-width: 640px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            nav .flex.items-center.space-x-6 {
+                display: none;
+            }
+            
+            /* 移动端导航栏高度调整 */
+            nav .flex.justify-between.h-16 {
+                flex-direction: row;
+                align-items: center;
+                height: 60px;
+                padding: 0 15px;
+            }
+            
+            nav .flex-shrink-0.flex.items-center {
+                margin-bottom: 0;
+            }
+        }
     </style>
     <script>
         // 全局 cleanText 函数
@@ -635,6 +1007,72 @@
                 .replace(/[^\x20-\x7E]/g, '') // 只保留基本ASCII可打印字符
                 .replace(/\s+/g, ' ') // 将多个空格替换为单个空格
                 .trim();
+        }
+
+        // 文章管理器对象
+        const ArticlesManager = {
+            // 生成文章的唯一slug，用于URL
+            generateSlug: function(article) {
+                if (!article) return '';
+                
+                // 创建包含标题和ID的slug
+                let slug = '';
+                
+                if (article.title) {
+                    // 清理标题并转换为小写
+                    slug = cleanText(article.title)
+                        .toLowerCase()
+                        .replace(/[^\w\s-]/g, '') // 移除特殊字符
+                        .replace(/\s+/g, '-') // 空格替换为连字符
+                        .replace(/-+/g, '-'); // 多个连字符替换为单个
+                }
+                
+                // 添加ID作为后缀，确保唯一性
+                if (article.id) {
+                    if (slug) {
+                        slug += '-' + article.id.toString();
+                    } else {
+                        slug = article.id.toString();
+                    }
+                }
+                // 如果没有标题和ID，使用日期
+                else if (article.date) {
+                    const date = new Date(article.date);
+                    const dateStr = date.toISOString().split('T')[0]; // 格式：YYYY-MM-DD
+                    
+                    if (slug) {
+                        slug += '-' + dateStr;
+                    } else {
+                        slug = 'article-' + dateStr;
+                    }
+                }
+                
+                // 如果仍然没有slug，使用随机字符串
+                if (!slug) {
+                    slug = 'article-' + Math.random().toString(36).substring(2, 10);
+                }
+                
+                return slug;
+            }
+        };
+
+        // 移动端菜单切换功能
+        function toggleMobileMenu() {
+            const mobileNav = document.querySelector('.mobile-nav');
+            if (mobileNav) {
+                mobileNav.style.display = mobileNav.style.display === 'block' ? 'none' : 'block';
+                
+                // 添加或移除active类以触发动画
+                if (mobileNav.style.display === 'block') {
+                    setTimeout(() => {
+                        mobileNav.classList.add('active');
+                        document.body.style.overflow = 'hidden'; // 防止背景滚动
+                    }, 10);
+                } else {
+                    mobileNav.classList.remove('active');
+                    document.body.style.overflow = ''; // 恢复背景滚动
+                }
+            }
         }
     </script>
     <!-- SEO Meta Tags -->
@@ -672,22 +1110,43 @@
                     <a href="author-network.html" class="text-gray-500 hover:text-gray-700 nav-link">Collaboration Network</a>
                     <a href="admin.html" class="text-gray-500 hover:text-gray-700 nav-link">Admin</a>
                 </div>
+                <!-- 添加移动端菜单按钮 -->
+                <button class="mobile-menu-btn text-gray-500 hover:text-gray-700" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- 移动端导航菜单 -->
+    <div class="mobile-nav">
+        <button class="mobile-nav-close" onclick="toggleMobileMenu()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <div class="mobile-nav-links">
+            <a href="#profile" class="text-gray-500 hover:text-gray-700" onclick="toggleMobileMenu()">Profile</a>
+            <a href="#articles" class="text-gray-500 hover:text-gray-700" onclick="toggleMobileMenu()">Articles</a>
+            <a href="author-network.html" class="text-gray-500 hover:text-gray-700">Collaboration Network</a>
+            <a href="admin.html" class="text-gray-500 hover:text-gray-700">Admin</a>
+        </div>
+    </div>
 
     <!-- Profile Section -->
     <section id="profile" class="py-12 bg-white" data-aos="fade-up">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="lg:flex lg:items-center lg:justify-between">
-                <div class="lg:w-1/3" data-aos="fade-right" data-aos-delay="100">
+                <div class="lg:w-1/3 mb-8 lg:mb-0" data-aos="fade-right" data-aos-delay="100">
                     <img id="profile-image"
                          src="" 
                          alt="Dennis P. Culhane" 
-                         class="rounded-lg shadow-lg">
+                         class="rounded-lg shadow-lg mx-auto lg:mx-0">
                     
                     <!-- 添加社交媒体链接 -->
-                    <div class="flex justify-center mt-6 space-x-4">
+                    <div class="flex justify-center lg:justify-start mt-6 space-x-4">
                         <a href="https://x.com/dennisculhane" target="_blank" class="text-gray-500 hover:text-primary-600 transition-colors">
                             <i class="fab fa-twitter text-xl"></i>
                         </a>
@@ -699,12 +1158,12 @@
                         </a>
                 </div>
                 </div>
-                <div class="lg:w-2/3 lg:pl-12 mt-8 lg:mt-0" data-aos="fade-left" data-aos-delay="200">
-                    <div class="flex justify-between items-start">
-                        <h2 id="profile-name" class="text-3xl font-bold text-gray-900 mb-4"></h2>
-                        <div class="flex flex-col gap-2">
+                <div class="lg:w-2/3 lg:pl-12" data-aos="fade-left" data-aos-delay="200">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                        <h2 id="profile-name" class="text-3xl font-bold text-gray-900 mb-4 text-center lg:text-left"></h2>
+                        <div class="flex flex-col gap-2 mx-auto sm:mx-0 mb-6 sm:mb-0">
                             <button id="follow-btn" 
-                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center shadow-md hover:shadow-lg transition-all">
+                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center shadow-md hover:shadow-lg transition-all justify-center sm:justify-start">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -712,7 +1171,7 @@
                                 Follow
                             </button>
                             <a href="data/Dennis CV Jan 2025.pdf" target="_blank" 
-                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center shadow-md hover:shadow-lg transition-all">
+                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center shadow-md hover:shadow-lg transition-all justify-center sm:justify-start">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -721,7 +1180,7 @@
                             </a>
                         </div>
                     </div>
-                    <div id="profile-positions" class="text-xl text-gray-600 mb-6"></div>
+                    <div id="profile-positions" class="text-xl text-gray-600 mb-6 text-center lg:text-left"></div>
                     <div class="prose prose-lg text-gray-500">
                         <div id="profile-biography" class="text-justify"></div>
                     </div>
@@ -736,7 +1195,7 @@
             <!-- Search Box -->
             <div class="mb-6" data-aos="fade-up">
                 <label for="search-input" class="block text-lg font-semibold text-gray-900 mb-2">Search Articles</label>
-                <div class="flex gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
                     <div class="flex-1 relative">
                         <input type="text" id="search-input" 
                             class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
@@ -753,7 +1212,7 @@
                         </button>
                     </div>
                     <button id="search-btn"
-                        class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center shadow-md hover:shadow-lg transition-all"
+                        class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center justify-center shadow-md hover:shadow-lg transition-all mt-2 sm:mt-0"
                         onclick="performSearch()">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -819,15 +1278,15 @@
     </section>
 
     <!-- 添加页脚部分 -->
-    <footer class="bg-gray-800 text-white py-12 mt-16">
+    <footer class="bg-gray-800 text-white py-8 sm:py-12 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
+                <div class="text-center md:text-left">
                     <h3 class="text-xl font-bold mb-4">About Dennis P. Culhane</h3>
                     <p class="text-gray-300 mb-4">
                         Dennis P. Culhane is a professor at the University of Pennsylvania School of Social Policy & Practice, focusing on housing policy, homelessness, and social service research.
                     </p>
-                    <div class="flex space-x-4 mt-4">
+                    <div class="flex space-x-4 mt-4 justify-center md:justify-start">
                         <a href="https://x.com/dennisculhane" target="_blank" class="text-gray-300 hover:text-white transition-colors">
                             <i class="fab fa-twitter text-xl"></i>
                         </a>
@@ -839,7 +1298,7 @@
                         </a>
                     </div>
                 </div>
-                <div>
+                <div class="text-center md:text-left">
                     <h3 class="text-xl font-bold mb-4">Quick Links</h3>
                     <ul class="space-y-2">
                         <li><a href="#profile" class="text-gray-300 hover:text-white transition-colors">Profile</a></li>
@@ -848,7 +1307,7 @@
                         <li><a href="data/Dennis CV Jan 2025.pdf" target="_blank" class="text-gray-300 hover:text-white transition-colors">View CV</a></li>
                     </ul>
                 </div>
-                <div>
+                <div class="text-center md:text-left">
                     <h3 class="text-xl font-bold mb-4">Contact</h3>
                     <p class="text-gray-300 mb-2">
                         <i class="fas fa-envelope mr-2"></i> culhane@upenn.edu
@@ -869,23 +1328,23 @@
 
     <!-- 在 body 标签结束前添加模态框 -->
     <div id="article-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden flex items-center justify-center z-[1000]">
-        <div class="bg-white rounded-lg max-w-5xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto z-[1001]">
+        <div class="bg-white rounded-lg max-w-5xl w-full mx-4 p-4 sm:p-6 max-h-[90vh] overflow-y-auto z-[1001]">
             <div class="flex justify-between items-start mb-4">
-                <h2 id="modal-title" class="text-2xl font-bold text-gray-900"></h2>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                <h2 id="modal-title" class="text-xl sm:text-2xl font-bold text-gray-900 pr-8"></h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 transition-colors absolute top-4 right-4">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-            <div id="modal-content" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div id="modal-content" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <div class="article-details">
-                    <p id="modal-authors" class="text-lg text-gray-600 mb-2"></p>
-                    <p id="modal-date" class="text-sm text-gray-500 mb-4"></p>
+                    <p id="modal-authors" class="text-base sm:text-lg text-gray-600 mb-2"></p>
+                    <p id="modal-date" class="text-xs sm:text-sm text-gray-500 mb-4"></p>
                     <div id="modal-categories" class="flex flex-wrap gap-2 mb-6 z-[1002]"></div>
-                    <p id="modal-abstract" class="text-gray-700 mb-6 text-justify"></p>
-                    <div id="modal-download" class="mt-4 flex items-center">
-                        <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 transition-all" download>
+                    <p id="modal-abstract" class="text-gray-700 mb-6 text-justify text-sm sm:text-base"></p>
+                    <div id="modal-download" class="mt-4 flex flex-col sm:flex-row items-start sm:items-center">
+                        <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 transition-all w-full sm:w-auto justify-center" download>
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
@@ -917,23 +1376,23 @@
 
     <!-- 添加 follow 模态框 -->
     <div id="follow-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-4">
             <div class="flex justify-between items-start mb-4">
-                <h2 class="text-xl font-bold text-gray-900">Subscribe to Updates</h2>
+                <h2 class="text-lg sm:text-xl font-bold text-gray-900">Subscribe to Updates</h2>
                 <button onclick="closeFollowModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-            <p class="text-gray-600 mb-4">
+            <p class="text-gray-600 mb-4 text-sm sm:text-base">
                 Enter your email address to receive notifications when new articles are published.
             </p>
             <form id="follow-form" class="space-y-4" onsubmit="submitToGoogleForm(event)">
                 <div>
                     <label for="follow-email" class="block text-sm font-medium text-gray-700">Email address</label>
                     <input type="email" id="follow-email" name="email" required
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition-all">
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition-all text-base">
                 </div>
                 <div class="flex items-center">
                     <input id="notification-preference" name="notification-preference" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
@@ -1011,7 +1470,7 @@
                     const authors = article.authors ? cleanText(Array.isArray(article.authors) ? article.authors.join(', ') : article.authors) : 'Unknown authors';
                     
                 return `
-                    <div class="article-card border-l-4 border-blue-500" data-article-slug="${slug}">
+                    <div class="article-card border-l-4 border-blue-500" data-article-slug="${slug}" data-id="${article.id}">
                         <div class="flex items-start">
                             <div class="flex-1">
                                 <h3 class="title-ellipsis cursor-pointer hover:text-blue-600" 
@@ -1584,6 +2043,8 @@
             articleElement.setAttribute('data-id', article.id);
             
             const slug = ArticlesManager.generateSlug(article);
+            articleElement.setAttribute('data-article-slug', slug);
+            
             const title = cleanText(article.title || 'Untitled');
             const date = article.date ? new Date(article.date).toLocaleDateString('en-US') : 'No date';
             const authors = article.authors ? cleanText(Array.isArray(article.authors) ? article.authors.join(', ') : article.authors) : 'Unknown authors';
