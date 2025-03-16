@@ -2,67 +2,67 @@
   "summary": {
     "totalVisits": 5840,
     "totalDownloads": 1400,
-    "avgReadTime": "4å32ç§",
-    "maxReadTime": "12å18ç§"
+    "avgReadTime": "4Ã¥ÂÂ32Ã§Â§Â",
+    "maxReadTime": "12Ã¥ÂÂ18Ã§Â§Â"
   },
   "countries": [
     {
       "code": "US",
-      "name": "ç¾å½",
+      "name": "Ã§Â¾ÂÃ¥ÂÂ½",
       "visits": 1250,
       "downloads": 320
     },
     {
       "code": "CN",
-      "name": "ä¸­å½",
+      "name": "Ã¤Â¸Â­Ã¥ÂÂ½",
       "visits": 980,
       "downloads": 210
     },
     {
       "code": "GB",
-      "name": "è±å½",
+      "name": "Ã¨ÂÂ±Ã¥ÂÂ½",
       "visits": 750,
       "downloads": 180
     },
     {
       "code": "CA",
-      "name": "å æ¿å¤§",
+      "name": "Ã¥ÂÂ Ã¦ÂÂ¿Ã¥Â¤Â§",
       "visits": 620,
       "downloads": 150
     },
     {
       "code": "AU",
-      "name": "æ¾³å¤§å©äº",
+      "name": "Ã¦Â¾Â³Ã¥Â¤Â§Ã¥ÂÂ©Ã¤ÂºÂ",
       "visits": 480,
       "downloads": 120
     },
     {
       "code": "DE",
-      "name": "å¾·å½",
+      "name": "Ã¥Â¾Â·Ã¥ÂÂ½",
       "visits": 420,
       "downloads": 100
     },
     {
       "code": "FR",
-      "name": "æ³å½",
+      "name": "Ã¦Â³ÂÃ¥ÂÂ½",
       "visits": 380,
       "downloads": 90
     },
     {
       "code": "JP",
-      "name": "æ¥æ¬",
+      "name": "Ã¦ÂÂ¥Ã¦ÂÂ¬",
       "visits": 350,
       "downloads": 85
     },
     {
       "code": "BR",
-      "name": "å·´è¥¿",
+      "name": "Ã¥Â·Â´Ã¨Â¥Â¿",
       "visits": 320,
       "downloads": 75
     },
     {
       "code": "IN",
-      "name": "å°åº¦",
+      "name": "Ã¥ÂÂ°Ã¥ÂºÂ¦",
       "visits": 290,
       "downloads": 70
     }
