@@ -2,67 +2,67 @@
   "summary": {
     "totalVisits": 5840,
     "totalDownloads": 1400,
-    "avgReadTime": "4分32秒",
-    "maxReadTime": "12分18秒"
+    "avgReadTime": "4å32ç§",
+    "maxReadTime": "12å18ç§"
   },
   "countries": [
     {
       "code": "US",
-      "name": "美国",
+      "name": "ç¾å½",
       "visits": 1250,
       "downloads": 320
     },
     {
       "code": "CN",
-      "name": "中国",
+      "name": "ä¸­å½",
       "visits": 980,
       "downloads": 210
     },
     {
       "code": "GB",
-      "name": "英国",
+      "name": "è±å½",
       "visits": 750,
       "downloads": 180
     },
     {
       "code": "CA",
-      "name": "加拿大",
+      "name": "å æ¿å¤§",
       "visits": 620,
       "downloads": 150
     },
     {
       "code": "AU",
-      "name": "澳大利亚",
+      "name": "æ¾³å¤§å©äº",
       "visits": 480,
       "downloads": 120
     },
     {
       "code": "DE",
-      "name": "德国",
+      "name": "å¾·å½",
       "visits": 420,
       "downloads": 100
     },
     {
       "code": "FR",
-      "name": "法国",
+      "name": "æ³å½",
       "visits": 380,
       "downloads": 90
     },
     {
       "code": "JP",
-      "name": "日本",
+      "name": "æ¥æ¬",
       "visits": 350,
       "downloads": 85
     },
     {
       "code": "BR",
-      "name": "巴西",
+      "name": "å·´è¥¿",
       "visits": 320,
       "downloads": 75
     },
     {
       "code": "IN",
-      "name": "印度",
+      "name": "å°åº¦",
       "visits": 290,
       "downloads": 70
     }
