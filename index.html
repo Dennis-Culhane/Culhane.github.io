@@ -1378,7 +1378,7 @@
     <div id="follow-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden flex items-center justify-center">
         <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-4">
             <div class="flex justify-between items-start mb-4">
-                <h2 class="text-lg sm:text-xl font-bold text-gray-900">Subscribe to Updates</h2>
+                <h2 class="text-lg sm:text-xl font-bold text-gray-900">Follow Updates</h2>
                 <button onclick="closeFollowModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -1394,15 +1394,9 @@
                     <input type="email" id="follow-email" name="email" required
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition-all text-base">
                 </div>
-                <div class="flex items-center">
-                    <input id="notification-preference" name="notification-preference" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                    <label for="notification-preference" class="ml-2 block text-sm text-gray-700">
-                        Only notify me about articles in my areas of interest
-                    </label>
-                </div>
                 <button type="submit"
                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-all">
-                    Subscribe
+                    Follow
                 </button>
             </form>
         </div>
@@ -1673,26 +1667,39 @@
             event.preventDefault();
             
             const email = document.getElementById('follow-email').value;
-            const preference = document.getElementById('notification-preference').checked;
             
-            // 这里应该是实际的表单提交逻辑
-            console.log('Submit subscription:', { email, preference });
+            // 实际提交到Google表单
+            const googleFormUrl = 'https://docs.google.com/forms/d/1GOYjQ30jVBCdmH56yMuKetmhGs1RIx2g3UnLm5DCWO4/formResponse';
+            const formData = new FormData();
             
-            // 模拟成功提交
-            const form = document.getElementById('follow-form');
-            form.innerHTML = `
-                <div class="text-center py-4">
-                    <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <h3 class="text-xl font-medium text-gray-900 mt-4">Subscription Successful!</h3>
-                    <p class="text-gray-500 mt-2">Thank you for subscribing. We will send you updates on new articles.</p>
-                    <button type="button" onclick="closeFollowModal()" 
-                        class="mt-6 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-all">
-                        Close
+            // 使用正确的条目ID
+            formData.append('entry.1677190001', email);
+            
+            // 使用fetch发送数据
+            fetch(googleFormUrl, {
+                method: 'POST',
+                mode: 'no-cors', // 必须使用no-cors模式
+                body: formData
+            }).then(() => {
+                // 显示成功信息
+                const form = document.getElementById('follow-form');
+                form.innerHTML = `
+                    <div class="text-center py-4">
+                        <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <h3 class="text-xl font-medium text-gray-900 mt-4">Following Successful!</h3>
+                        <p class="text-gray-500 mt-2">Thank you for following. We will send you updates on new articles.</p>
+                        <button type="button" onclick="closeFollowModal()" 
+                            class="mt-6 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-all">
+                            Close
                         </button>
-                </div>
-            `;
+                    </div>
+                `;
+            }).catch(error => {
+                console.error('Error submitting form:', error);
+                alert('Submission failed, please try again later');
+            });
         }
 
         // 切换视图模式
