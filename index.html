@@ -724,8 +724,9 @@
             transition: var(--transition-normal);
         }
         
+        /* 移除全局按钮悬浮效果，改为在需要的元素上单独添加 */
         button:hover, .btn:hover {
-            transform: translateY(-2px);
+            /* 移除默认的transform效果 */
         }
         
         /* 模态框优化 */
@@ -996,6 +997,33 @@
                 margin-bottom: 0;
             }
         }
+
+        /* 确保按钮始终可点击 */
+        #follow-btn, #profile a.bg-primary-600 {
+            position: relative;
+            z-index: 20;
+            pointer-events: auto;
+            /* 移除最小宽度限制 */
+        }
+        
+        /* 修复在某些长宽比下按钮无法点击的问题 */
+        #profile .flex-col.gap-2 {
+            position: relative;
+            z-index: 20;
+            pointer-events: auto;
+            isolation: isolate;
+        }
+        
+        @media (min-width: 640px) and (max-width: 1024px) {
+            #profile .flex-col.sm\:flex-row {
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            #profile .flex-1 {
+                min-width: 0;
+            }
+        }
     </style>
     <script>
         // 全局 cleanText 函数
@@ -1159,20 +1187,22 @@
                 </div>
                 </div>
                 <div class="lg:w-2/3 lg:pl-12" data-aos="fade-left" data-aos-delay="200">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                        <h2 id="profile-name" class="text-3xl font-bold text-gray-900 mb-4 text-center lg:text-left"></h2>
-                        <div class="flex flex-col gap-2 mx-auto sm:mx-0 mb-6 sm:mb-0">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start w-full">
+                        <div class="flex-1">
+                            <h2 id="profile-name" class="text-3xl font-bold text-gray-900 mb-4 text-center lg:text-left"></h2>
+                        </div>
+                        <div class="flex flex-col gap-2 mx-auto sm:mx-0 mb-6 sm:mb-0 z-10">
                             <button id="follow-btn" 
-                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center shadow-md hover:shadow-lg transition-all justify-center sm:justify-start">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 hover:-translate-y-1 flex items-center shadow-md hover:shadow-lg transition-all relative">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                 </svg>
                                 Follow
                             </button>
                             <a href="data/Dennis CV Jan 2025.pdf" target="_blank" 
-                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center shadow-md hover:shadow-lg transition-all justify-center sm:justify-start">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 hover:-translate-y-1 flex items-center shadow-md hover:shadow-lg transition-all relative">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
@@ -1991,14 +2021,30 @@
         }
 
         // 过滤并渲染文章
-        function filterAndRenderArticles() {
+        function filterAndRenderArticles(isLoadMore = false) {
             const articlesContainer = document.getElementById('articles-list');
+            if (!articlesContainer) {
+                console.error('Articles container not found');
+                return;
+            }
+            
+            // 显示加载指示器
+            const loadingIndicator = document.getElementById('articles-loading');
+            if (loadingIndicator) loadingIndicator.style.display = 'block';
             
             // 清空容器
             articlesContainer.innerHTML = '';
             
+            // 过滤文章前确保allArticles已初始化且为数组
+            if (!Array.isArray(allArticles)) {
+                console.error('Articles data is not available');
+                articlesContainer.innerHTML = '<div class="no-results">No articles data available</div>';
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                return;
+            }
+            
             // 过滤文章
-            let filteredArticles = allArticles;
+            let filteredArticles = allArticles.filter(article => article && article.id);
             
             // 按搜索词过滤
             if (searchTerm) {
@@ -2030,17 +2076,37 @@
                 return dateB - dateA; // 降序排列，从新到旧
             });
             
+            // 更新文章计数
+            const countElement = document.getElementById('article-count');
+            if (countElement) countElement.textContent = filteredArticles.length;
+            
+            // 隐藏加载指示器
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            
             // 渲染过滤后的文章
             if (filteredArticles.length === 0) {
-                articlesContainer.innerHTML = '<div class="no-results">No articles found matching your criteria</div>';
+                articlesContainer.innerHTML = '<div class="no-results text-center py-4 text-gray-500">No articles found matching your criteria</div>';
             } else {
+                // 一次性渲染所有文章
                 filteredArticles.forEach(article => {
                     articlesContainer.appendChild(renderArticle(article));
                 });
+                
+                // 添加渐显动画
+                const allArticleCards = articlesContainer.querySelectorAll('.article-card');
+                allArticleCards.forEach((article, index) => {
+                    article.style.opacity = '0';
+                    article.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        article.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                        article.style.opacity = '1';
+                        article.style.transform = 'translateY(0)';
+                    }, Math.min(index * 50, 1000)); // 限制最大延迟为1秒
+                });
             }
             
-            // 更新文章计数
-            document.getElementById('article-count').textContent = filteredArticles.length;
+            // 确保容器可见
+            articlesContainer.style.display = 'grid';
         }
 
         // 渲染单个文章
