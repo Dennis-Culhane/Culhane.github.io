@@ -1507,5 +1507,17 @@
     ],
     "abstract": "Of 27,638 homeless adults admitted to Philadelphia public shelters in the years 1990 through 1992, 20.1% received treatment for a mental health disorder, and 25.3% for a substance use disorder in the years 1985 through 1993. An additional 20.7% were identified as having untreated substance use problems. Overall, a total of 65.5% of adult shelter users were identified as ever having had a mental health or substance use problem, treated or untreated.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Prevalence%20of%20Treated%20Behavioral%20Disorders%20among%20Adult%20Shelter%20Users_%20A%20Longitudinal%20Study%281%29.pdf"
+  },
+  {
+    "id": "1744965690249",
+    "title": "Producing a National Incidence RateThe Viability and Challenges Related to Using Administrative Data",
+    "authors": "Denise C. Herz, Robert M. Goerge, Dennis P Culhane, TC Burnett",
+    "date": "2018-12-02",
+    "categories": [
+      "Child Welfare and Transition Aged Youth",
+      "AISP and Integrated Data Systems"
+    ],
+    "abstract": "A primary goal of this study was to propose a methodology for estimating a nationallyrepresentative incidence rate of dual system youth. Collectively, our research team reviewed thevarious options and concluded that producing a nationally representative incidence rate of dualsystem youth required the use of linked administrative data. Westat conducted a landscapeassessment of child welfare and juvenile justice data using extant information available to assessthe viability of accessing the data needed for such a study (see Chapter 8). These findings, inturn, informed the methodology recommended in Chapter 9. These processes were informative,underscoring the need to access administrative data while highlighting issues related to doing so.In this chapter, we provide a brief summary of the proposed design and key issues related tousing child welfare and juvenile justice data at the national level.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Producing%20a%20National%20Incidence%20Rate%E2%80%94The%20Viability%20and%20Challenges%20Related%20to%20Using%20Administrative%20Data%281%29.pdf"
   }
 ]
