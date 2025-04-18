@@ -1,16 +1,5 @@
 [
   {
-    "id": "1744963170397",
-    "title": "The Development of Community Information Systems to Support Neighborhood Change",
-    "authors": "Dennis P Culhane, Bradley Breuer",
-    "date": "1970-01-01",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "Community information systems are becoming an increasingly common way to distribute administrative data from local governments. These Web-based systems are using these administrative data to create and distribute valuable community and social indicator data to concerned individuals, social service organizations, community development professionals, and planners. Using the infrastructure provided by Geographic Information Systems (GIS) software and the Internet, these systems distribute important and detailed neighborhood data via maps, tables, and sometimes downloadable files. Some also provide analysis tools for users to manipulate or extract key neighborhood indicator data. Such systems have become popular in some municipal agencies because they are inexpensive and dont require desktop GIS software or expertise (Hillier, McKelvey, and Wernecke, forthcoming).",
-    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Development%20of%20Community%20Information%20Systems%20to%20Support%20Neighborhood%20Change%281%29.pdf"
-  },
-  {
     "id": "1744963173060",
     "title": "The History and Future of Homeless Management Information Systems",
     "authors": "Stephen R Poulin, Stephen Metraux, Dennis P Culhane",
