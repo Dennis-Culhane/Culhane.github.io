@@ -541,7 +541,7 @@ window.ArticlesManager = {
             articles[index] = {
                 ...articles[index],
                 ...articleData,
-                lastModified: new Date().toISOString()
+                lastModified: getCurrentDateString()
             };
 
             // 确保日期格式正确
@@ -715,13 +715,72 @@ function formatExcelDate(excelDate) {
             return excelDate;
         }
         
-        const date = new Date(excelDate);
-        if (!isNaN(date.getTime())) {
-            // 使用UTC方法避免时区问题
-            const year = date.getUTCFullYear();
-            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-            const day = String(date.getUTCDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        // 处理只有年份的情况(如 "2023")
+        if (/^\d{4}$/.test(excelDate)) {
+            return `${excelDate}-01-01`;
+        }
+        
+        // 处理年月格式(如 "2023-05" 或 "2023/05")
+        if (/^\d{4}[-\/]\d{1,2}$/.test(excelDate)) {
+            const parts = excelDate.split(/[-\/]/);
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-01`;
+        }
+        
+        // 处理斜杠分隔的日期格式
+        // 格式: MM/DD/YYYY 或 DD/MM/YYYY
+        const slashRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+        if (slashRegex.test(excelDate)) {
+            const parts = excelDate.split('/');
+            // 假设第一个数字如果小于等于12是月份，否则是日期
+            if (parseInt(parts[0]) <= 12) {
+                // 美式格式 MM/DD/YYYY
+                return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+            } else {
+                // 欧式格式 DD/MM/YYYY
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+        }
+        
+        // 格式: YYYY/MM/DD
+        const yearFirstRegex = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/;
+        if (yearFirstRegex.test(excelDate)) {
+            const parts = excelDate.split('/');
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        }
+        
+        // 尝试解析为日期对象
+        try {
+            // 检查是否格式为带T的ISO格式
+            if (excelDate.includes('T')) {
+                // 使用ISO格式创建日期对象
+                const date = new Date(excelDate);
+                if (!isNaN(date.getTime())) {
+                    // 创建一个不受时区影响的日期字符串
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+            } else {
+                // 对于"YYYY-MM-DD"格式，确保不会因时区而改变日期
+                if (excelDate.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+                    const parts = excelDate.split('-');
+                    return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                }
+                
+                // 对于其他日期字符串，创建日期并添加一天来修正时区问题
+                const date = new Date(excelDate);
+                if (!isNaN(date.getTime())) {
+                    // 使用时区调整函数
+                    const adjustedDate = adjustDateForTimezone(date);
+                    const year = adjustedDate.getFullYear();
+                    const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(adjustedDate.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to parse date string:', excelDate, e);
         }
     }
     
@@ -733,16 +792,18 @@ function formatExcelDate(excelDate) {
             const msPerDay = 86400 * 1000;
             const excelEpochDiff = 25569; // Excel纪元与JS纪元的差值（天数）
             
-            // 使用UTC日期避免时区干扰
+            // 修复：为了防止时区问题导致的日期偏差，这里加上一天（24小时）
             const utcDays = excelDate - excelEpochDiff;
             const utcMilliseconds = utcDays * msPerDay;
+            // 创建日期对象
             const date = new Date(utcMilliseconds);
             
             if (!isNaN(date.getTime())) {
-                // 使用UTC方法获取年月日，避免本地时区影响
-                const year = date.getUTCFullYear();
-                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(date.getUTCDate()).padStart(2, '0');
+                // 使用时区调整函数
+                const adjustedDate = adjustDateForTimezone(date);
+                const year = adjustedDate.getFullYear();
+                const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+                const day = String(adjustedDate.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
             }
         } catch (error) {
@@ -756,6 +817,23 @@ function formatExcelDate(excelDate) {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+// 调整日期以适应时区
+function adjustDateForTimezone(date) {
+    // 获取当前时区偏移（分钟）
+    const timezoneOffset = date.getTimezoneOffset();
+    
+    // 如果时区偏移为负数（东八区等为负数，格林威治为0，西方为正数）
+    // 且日期时间为午夜，则可能需要添加一天
+    if (timezoneOffset < 0 && date.getUTCHours() === 0) {
+        // 创建一个新的日期对象，加上一天
+        const adjustedDate = new Date(date);
+        adjustedDate.setDate(adjustedDate.getDate() + 1);
+        return adjustedDate;
+    }
+    
+    return date;
 }
 
 // 在处理Excel导入的函数中

@@ -978,6 +978,13 @@
                 
                 // 添加重试函数
                 async function uploadWithRetry(articleData, maxRetries = 3) {
+                    // 确保日期格式正确
+                    if (articleData.date) {
+                        if (!/^\d{4}-\d{2}-\d{2}$/.test(articleData.date)) {
+                            articleData.date = formatExcelDate(articleData.date);
+                        }
+                    }
+                    
                     for (let i = 0; i < maxRetries; i++) {
                         try {
                             await ArticlesManager.addArticle(articleData);
@@ -1119,18 +1126,41 @@
                     const parts = excelDate.split('/');
                     return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
                 }
-            }
-            
-            // 处理常见的日期格式字符串
-            if (typeof excelDate === 'string') {
-                // 尝试直接解析字符串
-                const dateObj = new Date(excelDate);
-                if (!isNaN(dateObj.getTime())) {
-                    // 修复时区问题：创建UTC日期字符串，忽略时区影响
-                    const year = dateObj.getFullYear();
-                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                    const day = String(dateObj.getDate()).padStart(2, '0');
-                    return `${year}-${month}-${day}`;
+                
+                // 处理常见的日期格式字符串
+                // 尝试解析为日期对象
+                try {
+                    // 检查是否格式为带T的ISO格式
+                    if (excelDate.includes('T')) {
+                        // 使用ISO格式创建日期对象
+                        const dateObj = new Date(excelDate);
+                        if (!isNaN(dateObj.getTime())) {
+                            // 创建一个不受时区影响的日期字符串
+                            const year = dateObj.getFullYear();
+                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const day = String(dateObj.getDate()).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                        }
+                    } else {
+                        // 对于"YYYY-MM-DD"格式，确保不会因时区而改变日期
+                        if (excelDate.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+                            const parts = excelDate.split('-');
+                            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                        }
+                        
+                        // 对于其他日期字符串，创建日期并添加一天来修正时区问题
+                        const dateObj = new Date(excelDate);
+                        if (!isNaN(dateObj.getTime())) {
+                            // 使用时区调整函数
+                            const adjustedDate = adjustDateForTimezone(dateObj);
+                            const year = adjustedDate.getFullYear();
+                            const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+                            const day = String(adjustedDate.getDate()).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse date string:', excelDate, e);
                 }
             }
             
@@ -1139,21 +1169,24 @@
                 try {
                     // Excel的日期是从1900年1月1日开始的天数，但有一个闰年错误
                     // 25569是1970年1月1日相对于Excel纪元的天数
-                    // 修复时区问题：不再添加额外的一天时间
+                    // 修复时区问题：为了防止时区问题导致的日期偏差，这里加上一天（24小时）
                     const msPerDay = 86400 * 1000;
                     const excelEpochDiff = 25569; // Excel纪元与JS纪元的差值（天数）
                     
-                    // 使用UTC日期避免时区干扰
+                    // 计算UTC时间
                     const utcDays = excelDate - excelEpochDiff;
                     const utcMilliseconds = utcDays * msPerDay;
+                    // 创建日期对象
                     const dateObj = new Date(utcMilliseconds);
                     
-                    // 使用UTC方法获取年月日，避免本地时区影响
-                    const year = dateObj.getUTCFullYear();
-                    const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
-                    const day = String(dateObj.getUTCDate()).padStart(2, '0');
-                    
-                    return `${year}-${month}-${day}`;
+                    // 使用时区调整函数
+                    if (!isNaN(dateObj.getTime())) {
+                        const adjustedDate = adjustDateForTimezone(dateObj);
+                        const year = adjustedDate.getFullYear();
+                        const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(adjustedDate.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                    }
                 } catch (error) {
                     console.warn('Failed to parse Excel numeric date:', excelDate);
                 }
@@ -1200,6 +1233,23 @@
             document.getElementById('edit-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
             document.getElementById('edit-form').reset();
+        }
+
+        // 调整日期以适应时区
+        function adjustDateForTimezone(date) {
+            // 获取当前时区偏移（分钟）
+            const timezoneOffset = date.getTimezoneOffset();
+            
+            // 如果时区偏移为负数（东八区等为负数，格林威治为0，西方为正数）
+            // 且日期时间为午夜，则可能需要添加一天
+            if (timezoneOffset < 0 && date.getUTCHours() === 0) {
+                // 创建一个新的日期对象，加上一天
+                const adjustedDate = new Date(date);
+                adjustedDate.setDate(adjustedDate.getDate() + 1);
+                return adjustedDate;
+            }
+            
+            return date;
         }
 
         // 确保模态框的关闭按钮和取消按钮正常工作
