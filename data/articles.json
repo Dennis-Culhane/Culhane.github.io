@@ -1484,5 +1484,17 @@
     ],
     "abstract": "This study examines mortality among New York City (NYC) homeless shelter users, assessing the relationships between mortality hazard and time in shelter, patterns of homelessness, and subsequent housing exits for both adults in families and single adults. Administrative records from the NYC shelter system were matched with death records from the Social Security Administration for 160,525 persons. Crude mortality rates and life tables were calculated, and survival analyses were undertaken using these data. Life expectancy was 64.2 and 68.6 years for single adult males and single adult females, respectively, and among adults in families, life expectancy was 67.2 and 70.1 years for males and females, respectively. For both groups, exits to stable housing (subsidized or non-subsidized) were associated with reduced mortality hazard. And while mortality hazard was substantially reduced for the time adults were in shelters, extended shelter use patterns were associated with increased mortality hazard. Differences between single homelessness and family homelessness extend to disparities in mortality rates. Although causal links cannot be established here, results suggest that, for both subgroups of the homeless population, prompt resolution of homelessness and availability of housing interventions may contribute to reduced mortality.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Impact%20of%20Shelter%20Use%20and%20Housing%20Placement%20on%20Mortality%20Hazard%20for%20Unaccompanied%20Adults%20and%20Adults%20in%20Family%20Households%20Entering%20New%20York%20City%20Sh.pdf"
+  },
+  {
+    "id": "1744965684957",
+    "title": "The Impact of Supportive Housing for Homeless People with Severe Mental Illness on the Utilization of the Public Health, Corrections, and Emergency Shelter Systems: The New York-New York Initiative",
+    "authors": "Dennis P. Culhane, Stephen Metraux, Trevor R. Hadley",
+    "date": "2002-01-02",
+    "categories": [
+      "Housing Interventions",
+      "Policy Analysis and Commentary"
+    ],
+    "abstract": "This article assesses the impact of public investment in supportive housing for homeless persons with severe mental disabilities. Data on 4,679 people placed in such housing in New York City between 1989 and 1997 were merged with data on the utilization of public shelters, public and private hospitals, and correctional facilities. A series of matched controls who were homeless but not placed in housing were similarly tracked.Regression results reveal that persons placed in supportive housing experience marked reductions in shelter use, hospitalizations, length of stay per hospitalization, and time incarcerated. Before placement, homeless people with severe mental illness used about $40,449 per person per year in services (1999 dollars). Placement was associated with a reduction in services use of $16,282 per housing unit per year. Annual unit costs are estimated at $17,277, for a net cost of $995 per unit per year over the first two years.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Impact%20of%20Supportive%20Housing%20for%20Homeless%20People%20with%20Severe%20Mental%20Illness%20on%20the%20Utilization%20of%20the%20Public%20Health%2C%20Corrections%2C%20and%20Emergency%20Sh.pdf"
   }
 ]
