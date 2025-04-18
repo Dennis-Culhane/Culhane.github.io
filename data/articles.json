@@ -2504,5 +2504,16 @@
     ],
     "abstract": "A web-based tool for identifying properties and browsing land records in Philadelphia. Password protected.",
     "pdfUrl": "http://www.cml.upenn.edu/parcelbase"
+  },
+  {
+    "id": "1744965925298",
+    "title": "Philadelphia Schoolbase",
+    "authors": "Dennis P Culhane",
+    "date": "2007-01-02",
+    "categories": [
+      "AISP and Integrated Data Systems"
+    ],
+    "abstract": "A web-based tool for creating tables, maps, charts and statistical profiles for Philadelphia's schools and neighborhoods based on data from the School District of Philadelphia. (Password protected)",
+    "pdfUrl": "http://www.cml.upenn.edu/schoolbase"
   }
 ]
