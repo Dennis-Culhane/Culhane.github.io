@@ -1,16 +1,5 @@
 [
   {
-    "id": "1738572833280",
-    "title": "Quality Framework for Integrated Data Systems",
-    "authors": "Adelia Jenkins, Emily Berkowitz, TC Burnett, Dennis P Culhane, Amy Hawn Nelson, Kristen Smith, Sharon Zanti",
-    "date": "2021-11-05",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "Integrated Data Systems (IDS) are a powerful approach to combining client, patient, student and taxpayer information from multiple sources to better understand the nature, extent and potential best ways to serve the needs of the public. In this guide, staff from Actionable Intelligence for Social Policy lay out a quality framework for addressing the core responsibilities of a highly functional IDS: Governance, Legal, Technical, Capacity and Impact.",
-    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Quality%20Framework%20for%20Integrated%20Data%20Systems%281%29.pdf"
-  },
-  {
     "id": "1738572836059",
     "title": "Rearranging the Deck Chairs or Reallocating the Lifeboats?: Homelessness Assistance and Its Alternatives",
     "authors": "Dennis P Culhane, Stephen Metraux",
