@@ -59,5 +59,16 @@
     ],
     "abstract": "Community information systems are becoming an increasingly common way to distribute administrative data from local governments. These Web-based systems are using these administrative data to create and distribute valuable community and social indicator data to concerned individuals, social service organizations, community development professionals, and planners. Using the infrastructure provided by Geographic Information Systems (GIS) software and the Internet, these systems distribute important and detailed neighborhood data via maps, tables, and sometimes downloadable files. Some also provide analysis tools for users to manipulate or extract key neighborhood indicator data. Such systems have become popular in some municipal agencies because they are inexpensive and dont require desktop GIS software or expertise (Hillier, McKelvey, and Wernecke, forthcoming).",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Development%20of%20Community%20Information%20Systems%20to%20Support%20Neighborhood%20Change%281%29.pdf"
+  },
+  {
+    "id": "1744965360380",
+    "title": "The History and Future of Homeless Management Information Systems",
+    "authors": "Stephen R Poulin, Stephen Metraux, Dennis P Culhane",
+    "date": "2008-01-02",
+    "categories": [
+      "HMIS and AHAR"
+    ],
+    "abstract": "This chapter reviews the history of the development of management information systems in the homelessness program area. Efforts begun in the 1980s and 1990s by individual cities are discussed, as are the Congressional initatives that led to the mandated implementation of such systems in the US. The use of these systems for the Annual Homelessness Assessment Report to the US Congress is described, as are potential future uses of HMIS for research, policy and program planning.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20History%20and%20Future%20of%20Homeless%20Management%20Information%20Systems%281%29.pdf"
   }
 ]
