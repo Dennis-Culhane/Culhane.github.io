@@ -1490,7 +1490,12 @@
             latestContainer.innerHTML = latestArticles.map(article => {
                 const slug = ArticlesManager.generateSlug(article);
                     const title = cleanText(article.title || 'Untitled');
-                    const date = article.date ? new Date(article.date).toLocaleDateString('en-US') : 'No date';
+                    // 统一使用美式日期格式(MM/DD/YYYY)
+                    const date = article.date ? new Date(article.date).toLocaleDateString('en-US', {
+                        month: '2-digit',
+                        day: '2-digit',
+                        year: 'numeric'
+                    }) : 'No date';
                     const authors = article.authors ? cleanText(Array.isArray(article.authors) ? article.authors.join(', ') : article.authors) : 'Unknown authors';
                     
                 return `
@@ -1543,7 +1548,12 @@
             
             titleElement.textContent = cleanText(article.title);
             authorsElement.textContent = Array.isArray(article.authors) ? article.authors.join(', ') : article.authors;
-            dateElement.textContent = new Date(article.date).toLocaleDateString('en-US');
+            // 统一使用美式日期格式(MM/DD/YYYY)
+            dateElement.textContent = article.date ? new Date(article.date).toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            }) : 'No date';
             abstractElement.textContent = cleanText(article.abstract || 'No abstract available');
             
             // 更新分类标签
@@ -2119,7 +2129,12 @@
             articleElement.setAttribute('data-article-slug', slug);
             
             const title = cleanText(article.title || 'Untitled');
-            const date = article.date ? new Date(article.date).toLocaleDateString('en-US') : 'No date';
+            // 统一使用美式日期格式(MM/DD/YYYY)
+            const date = article.date ? new Date(article.date).toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            }) : 'No date';
             const authors = article.authors ? cleanText(Array.isArray(article.authors) ? article.authors.join(', ') : article.authors) : 'Unknown authors';
             
             // 构建文章HTML，与最新文章保持一致的格式，移除摘要部分

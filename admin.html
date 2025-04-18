@@ -726,6 +726,11 @@
                             <div class="flex-1">
                                 <h2 class="title-ellipsis">${article.title}</h2>
                                 <p class="authors-ellipsis">${article.authors}</p>
+                                <p class="text-sm text-gray-500 mb-1">${article.date ? new Date(article.date).toLocaleDateString('en-US', {
+                                    month: '2-digit', 
+                                    day: '2-digit', 
+                                    year: 'numeric'
+                                }) : ''}</p>
                                 <p class="categories-ellipsis">${Array.isArray(article.categories) ? article.categories.join(', ') : ''}</p>
                                 <p class="abstract-clamp">${article.abstract}</p>
                                 <div class="mt-4 flex justify-between">
@@ -1074,23 +1079,85 @@
         function formatExcelDate(excelDate) {
             if (!excelDate) return '';
             
-            // 尝试解析日期字符串
-            const date = new Date(excelDate);
-            if (!isNaN(date.getTime())) {
-                return date.toISOString().split('T')[0];
+            // 如果已经是标准日期格式（YYYY-MM-DD），直接返回
+            if (typeof excelDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(excelDate)) {
+                return excelDate;
             }
             
-            // 将Excel日期数字转换为JavaScript日期
-            try {
-                const date = new Date((excelDate - 25569) * 86400 * 1000);
-                if (!isNaN(date.getTime())) {
-                    return date.toISOString().split('T')[0];
-                }
-                return new Date().toISOString().split('T')[0];
-            } catch (error) {
-                console.warn('Failed to parse Excel date:', excelDate);
-                return new Date().toISOString().split('T')[0];
+            // 处理只有年份的情况(如 "2023")
+            if (/^\d{4}$/.test(String(excelDate))) {
+                return `${excelDate}-01-01`;
             }
+            
+            // 处理年月格式(如 "2023-05" 或 "2023/05")
+            if (/^\d{4}[-\/]\d{1,2}$/.test(String(excelDate))) {
+                const parts = String(excelDate).split(/[-\/]/);
+                return `${parts[0]}-${parts[1].padStart(2, '0')}-01`;
+            }
+            
+            // 处理其他非标准日期格式(如 "2023/5/15" 或 "15/5/2023")
+            if (typeof excelDate === 'string') {
+                // 尝试检测常见的日期格式
+                
+                // 格式: MM/DD/YYYY 或 DD/MM/YYYY
+                const slashRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+                if (slashRegex.test(excelDate)) {
+                    const parts = excelDate.split('/');
+                    // 假设第一个数字如果小于等于12是月份，否则是日期
+                    if (parseInt(parts[0]) <= 12) {
+                        // 美式格式 MM/DD/YYYY
+                        return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                    } else {
+                        // 欧式格式 DD/MM/YYYY
+                        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    }
+                }
+                
+                // 格式: YYYY/MM/DD
+                const yearFirstRegex = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/;
+                if (yearFirstRegex.test(excelDate)) {
+                    const parts = excelDate.split('/');
+                    return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                }
+            }
+            
+            // 处理常见的日期格式字符串
+            if (typeof excelDate === 'string') {
+                // 尝试直接解析字符串
+                const dateObj = new Date(excelDate);
+                if (!isNaN(dateObj.getTime())) {
+                    // 修复时区问题：创建UTC日期字符串，忽略时区影响
+                    const year = dateObj.getFullYear();
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+            }
+            
+            // 处理Excel数字日期格式
+            if (typeof excelDate === 'number') {
+                try {
+                    // Excel的日期是从1900年1月1日开始的天数，但有一个闰年错误
+                    // 25569是1970年1月1日相对于Excel纪元的天数
+                    // 需要加上1天来修正Excel到JavaScript日期的转换导致的一天差异
+                    const dateObj = new Date((excelDate - 25569) * 86400 * 1000 + 86400000);
+                    if (!isNaN(dateObj.getTime())) {
+                        const year = dateObj.getFullYear();
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                    }
+                } catch (error) {
+                    console.warn('Failed to parse Excel numeric date:', excelDate);
+                }
+            }
+            
+            // 如果所有尝试都失败，返回当前日期
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         // 添加文件/URL切换处理
@@ -1488,6 +1555,11 @@
                             <div class="flex-1">
                                 <h2 class="title-ellipsis">${article.title}</h2>
                                 <p class="authors-ellipsis">${article.authors}</p>
+                                <p class="text-sm text-gray-500 mb-1">${article.date ? new Date(article.date).toLocaleDateString('en-US', {
+                                    month: '2-digit', 
+                                    day: '2-digit', 
+                                    year: 'numeric'
+                                }) : ''}</p>
                                 <p class="categories-ellipsis">${Array.isArray(article.categories) ? article.categories.join(', ') : ''}</p>
                                 <p class="abstract-clamp">${article.abstract || ''}</p>
                                 <div class="mt-4 flex justify-between">
