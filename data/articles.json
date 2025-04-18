@@ -2526,5 +2526,17 @@
     ],
     "abstract": "A web-based tool for identifying vacant commercial properties and brownfields in eastern and eastern north Philadelphia.",
     "pdfUrl": "http://www.cml.upenn.edu/phillysitefinder"
+  },
+  {
+    "id": "1744965930873",
+    "title": "Where Homeless Families Come From: Toward a Prevention-Oriented Approach in Washington, DC",
+    "authors": "Dennis P Culhane, Chang Moo Lee",
+    "date": "1997-11-02",
+    "categories": [
+      "Structural Determinants of Homelessness",
+      "Housing Interventions"
+    ],
+    "abstract": "The District of Columbia shelter system currently operates on a continuum of care model that assumes all or most people with housing emergencies should enter shelters and move progressively through a series of fully subsidized residential programs, then on to independence. The federal government encouraged the development of this model, and it is one that predominates nationally. This approach, however, is inflexible and has relatively high fixed unit costs because it assumes that all homeless people, regardless of the nature of their housing emergency, should enter a system of supervised residential programs. In fact, not all segments of the homeless population require the extensive social services necessary to help chronically homeless persons. States and localities recognize that not everyone should enter the shelter system, and have increasingly looked to alternative methods to divert families and individuals from shelters. Typically they combine rigorous needs assessment with emergency housing assistance-such as time-limited rent subsidies, rent arrears assistance, relocation grants, utility assistance, or loans and often supplement such financial assistance with case management and/or referral to community programs. Homelessness prevention programs target the nearly homeless - those who with assistance can overcome an acute housing crisis and avoid a shelter stay - and generally are delivered in a neighborhood context. Unfortunately, federal funds for homelessness cannot currently be used for such activity.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Where%20Homeless%20Families%20Come%20From_%20Toward%20a%20Prevention-Oriented%20Approach%20in%20Washington%2C%20DC%281%29.pdf"
   }
 ]
