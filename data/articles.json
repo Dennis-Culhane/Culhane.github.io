@@ -829,10 +829,12 @@
     "authors": "Stephen Metraux, Dennis P. Culhane",
     "date": "2004-01-02",
     "categories": [
-      "Behavioral Health, HIV, and Criminal Justice"
+      "Behavioral Health, HIV, and Criminal Justice",
+      "Patterns of Homelessness"
     ],
     "abstract": "This paper examines the incidence of and interrelationships between shelter use and reincarceration among a cohort of 48,424 persons who were released from New York State prisons to New York City in 19951998. Results show that, within two years of release, 11.4% of the study group entered a New York City homeless shelter and 32.8% of this group was again imprisoned. Using survival analysis methods, time since prison release and history of residential instability were the most salient risk factors related to shelter use, and shelter use increased the risk of subsequent reincarceration.",
-    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Homeless%20Shelter%20Use%20and%20Reincarceration%20Following%20Prison%20Release_%20Assessing%20the%20Risk%281%29.pdf"
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Homeless%20Shelter%20Use%20and%20Reincarceration%20Following%20Prison%20Release_%20Assessing%20the%20Risk%281%29.pdf",
+    "lastModified": "2025-04-18"
   },
   {
     "id": "1744965538395",
