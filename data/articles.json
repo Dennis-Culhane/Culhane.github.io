@@ -2923,5 +2923,16 @@
     ],
     "abstract": "The present study sought to define neighborhood context by examining relationships among data from city-level administrative databases at the level of the census block group. The present neighborhood investigation included 1,801 block groups comprising a large, northeastern metropolitan area. Common factor analyses and multistage, hierarchical cluster analyses yielded two dimensions (i.e., Social Stress, Structural Danger) and two typologies (i.e., Racial Composition, Property Structure Composition) of neighborhood context. Simultaneous multiple regression analyses revealed small but statistically significant associations between neighborhood variables and academic outcomes for public school kindergarten children.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Employing%20community%20data%20to%20investigate%20social%20and%20structural%20dimensions%20of%20urban%20neighborhoods%EF%BC%9AAn%20early%20childhood%20education%20example.pdf"
+  },
+  {
+    "id": "1744966031079",
+    "title": "Homeless Management Information Systems (HMIS); Data and Technical Standards Final Notice",
+    "authors": "Dennis P Culhane",
+    "date": "2004-07-31",
+    "categories": [
+      "HMIS and AHAR"
+    ],
+    "abstract": "On July 22, 2003 (68 FR 43430), HUD published a draft Notice that described the data and technical standards for implementing Homeless Management Information Systems, HMIS. An HMIS is a computerized data collection application that facilitates the collection of information on homeless individuals and families using residential or other homeless assistance services and stores that data in an electronic format. Because an HMIS has the capacity to integrate data from all homeless service providers in the community and to capture basic descriptive information on every person served, it is a valuable resource for communities. HMIS can be employed to: better understand the characteristics of homeless persons in the community, including their demographic characteristics, patterns of homelessness, and use of services; improve the delivery of housing and services to specific sub-populations such as veterans or persons experiencing chronic homelessness; and assess and document the communitys progress in reducing homelessness.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/Homeless%20Management%20Information%20Systems%20%28HMIS%29%3B%20Data%20and%20Technical%20Standards%20Final%20Notice.pdf"
   }
 ]
