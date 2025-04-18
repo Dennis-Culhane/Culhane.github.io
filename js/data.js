@@ -315,12 +315,20 @@ window.ArticlesManager = {
                 id: Date.now().toString(),
                 title: articleData.title.trim(),
                 authors: articleData.authors.trim(),
-                date: articleData.date || new Date().toISOString().split('T')[0],
+                date: articleData.date || getCurrentDateString(),
                 categories: categories,
                 abstract: articleData.abstract ? articleData.abstract.trim() : '',
                 pdfUrl: articleData.pdfUrl.trim()
             };
 
+            // 确保日期格式正确
+            if (newArticle.date) {
+                // 如果不是标准的YYYY-MM-DD格式，尝试重新格式化
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(newArticle.date)) {
+                    newArticle.date = formatExcelDate(newArticle.date);
+                }
+            }
+            
             console.log('New article object:', newArticle);
 
             // Add to articles array
@@ -536,6 +544,14 @@ window.ArticlesManager = {
                 lastModified: new Date().toISOString()
             };
 
+            // 确保日期格式正确
+            if (articles[index].date) {
+                // 如果不是标准的YYYY-MM-DD格式，尝试重新格式化
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(articles[index].date)) {
+                    articles[index].date = formatExcelDate(articles[index].date);
+                }
+            }
+
             // 获取现有文件的 SHA
             const response = await fetch(`${config.apiBaseUrl}/contents/${config.articlesPath}`, {
                 headers: {
@@ -613,12 +629,22 @@ window.ArticlesManager = {
 
     // 生成文章 slug
     generateSlug(article) {
-        const date = article.date ? new Date(article.date).toISOString().split('T')[0] : '';
+        let dateStr = '';
+        if (article.date) {
+            // 如果已经是YYYY-MM-DD格式，直接使用
+            if (/^\d{4}-\d{2}-\d{2}$/.test(article.date)) {
+                dateStr = article.date;
+            } else {
+                // 否则尝试格式化日期，避免时区问题
+                dateStr = formatExcelDate(article.date);
+            }
+        }
+        
         const titleSlug = article.title
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '');
-        return `${date}-${titleSlug}`;
+        return `${dateStr}-${titleSlug}`;
     }
 };
 
@@ -739,4 +765,13 @@ function processExcelData(data) {
         categories: row.categories ? row.categories.split(';').map(c => c.trim()) : [],
         // ... 其他字段 ...
     }));
+}
+
+// 获取当前日期的YYYY-MM-DD格式字符串，考虑时区
+function getCurrentDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
