@@ -2438,5 +2438,16 @@
     ],
     "abstract": "This on-line tool enables communities (Continuums of Care, or CoCs) to model different homelessness-related bed capacity scenarios related to COVID-19 exposure and risk status. Users can customize their planning scenarios by varying infection rates, high risk population rates, unsheltered PIT count coverage rates, and view impact on demand for hospitalization and ICU beds, as well as emergency accommodation demand for high and low risk populations without infection.",
     "pdfUrl": "https://tomhbyrne.shinyapps.io/covid19_homeless_dashboard/"
+  },
+  {
+    "id": "1744965908160",
+    "title": "Palm Beach County Community Resource Information and Mapping System (PBC CRIMS)",
+    "authors": "Dennis P Culhane",
+    "date": "2000-01-02",
+    "categories": [
+      "AISP and Integrated Data Systems"
+    ],
+    "abstract": "A web-based tool for creating maps, tables, charts and neighoborhood statistical profiles for Palm Beach County, Florida.",
+    "pdfUrl": "http://gisweb.co.palm-beach.fl.us/crims/default.asp"
   }
 ]
