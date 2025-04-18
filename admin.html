@@ -1139,14 +1139,21 @@
                 try {
                     // Excel的日期是从1900年1月1日开始的天数，但有一个闰年错误
                     // 25569是1970年1月1日相对于Excel纪元的天数
-                    // 需要加上1天来修正Excel到JavaScript日期的转换导致的一天差异
-                    const dateObj = new Date((excelDate - 25569) * 86400 * 1000 + 86400000);
-                    if (!isNaN(dateObj.getTime())) {
-                        const year = dateObj.getFullYear();
-                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        const day = String(dateObj.getDate()).padStart(2, '0');
-                        return `${year}-${month}-${day}`;
-                    }
+                    // 修复时区问题：不再添加额外的一天时间
+                    const msPerDay = 86400 * 1000;
+                    const excelEpochDiff = 25569; // Excel纪元与JS纪元的差值（天数）
+                    
+                    // 使用UTC日期避免时区干扰
+                    const utcDays = excelDate - excelEpochDiff;
+                    const utcMilliseconds = utcDays * msPerDay;
+                    const dateObj = new Date(utcMilliseconds);
+                    
+                    // 使用UTC方法获取年月日，避免本地时区影响
+                    const year = dateObj.getUTCFullYear();
+                    const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getUTCDate()).padStart(2, '0');
+                    
+                    return `${year}-${month}-${day}`;
                 } catch (error) {
                     console.warn('Failed to parse Excel numeric date:', excelDate);
                 }

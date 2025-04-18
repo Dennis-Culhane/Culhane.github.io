@@ -683,22 +683,53 @@ function formatExcelDate(excelDate) {
     if (!excelDate) return '';
     
     // 尝试解析日期字符串
-    const date = new Date(excelDate);
-    if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
+    if (typeof excelDate === 'string') {
+        // 如果已经是标准日期格式（YYYY-MM-DD），直接返回
+        if (/^\d{4}-\d{2}-\d{2}$/.test(excelDate)) {
+            return excelDate;
+        }
+        
+        const date = new Date(excelDate);
+        if (!isNaN(date.getTime())) {
+            // 使用UTC方法避免时区问题
+            const year = date.getUTCFullYear();
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
     }
     
     // 将Excel日期数字转换为JavaScript日期
-    try {
-        const date = new Date((excelDate - 25569) * 86400 * 1000);
-        if (!isNaN(date.getTime())) {
-            return date.toISOString().split('T')[0];
+    if (typeof excelDate === 'number') {
+        try {
+            // Excel的日期是从1900年1月1日开始的天数
+            // 25569是1970年1月1日相对于Excel纪元的天数
+            const msPerDay = 86400 * 1000;
+            const excelEpochDiff = 25569; // Excel纪元与JS纪元的差值（天数）
+            
+            // 使用UTC日期避免时区干扰
+            const utcDays = excelDate - excelEpochDiff;
+            const utcMilliseconds = utcDays * msPerDay;
+            const date = new Date(utcMilliseconds);
+            
+            if (!isNaN(date.getTime())) {
+                // 使用UTC方法获取年月日，避免本地时区影响
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+        } catch (error) {
+            console.warn('Failed to parse Excel date:', excelDate);
         }
-        return new Date().toISOString().split('T')[0];
-    } catch (error) {
-        console.warn('Failed to parse Excel date:', excelDate);
-        return new Date().toISOString().split('T')[0];
     }
+    
+    // 如果所有尝试都失败，返回当前日期
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 // 在处理Excel导入的函数中
