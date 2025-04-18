@@ -1589,5 +1589,18 @@
     ],
     "abstract": "This paper describes the structure of the shelter system in the City of Philadelphia and the patterns by which homeless people utilize that system. The shelter system is found to be segregated by age, gender, family and disability status, with the young single men and families concentrated in the largest facilities (capacity more than 100). A majority of the city's shelters are run on a for-profit basis, many of which are small board and care facilities, although the plurality of shelter beds are in large, not-for profit shelters. Data are reported which reveal an annual rate of turnover in the shelter system of approximately 6 persons per bed, with an annual average length of stay of 60 days per client. However, repeat users are likely to account for as much as one-third of the shelter population at any given time. Considered together, these findings suggest that, for many people, the shelters serve primarily as a short-term supplement to a restricted range of housing opportunities in the community. The research and policy implications of this pattern of utilization are discussed.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Organization%20and%20Utilization%20of%20the%20Shelter%20System%20in%20Philadelphia_%20Estimating%20Length%20of%20Stay%20and%20Turnover%281%29.pdf"
+  },
+  {
+    "id": "1744965708785",
+    "title": "The Potential of Linked Administrative Data for Advancing Homelessness Research and Policy",
+    "authors": "Dennis P Culhane",
+    "date": "2016-12-02",
+    "categories": [
+      "HMIS and AHAR",
+      "AISP and Integrated Data Systems",
+      "Policy Analysis and Commentary"
+    ],
+    "abstract": "Administrative data enable planners, researchers and program evaluators to examine services use on a population basis, longitudinally. The potential for linking administrative data across multiple systems further allows for a more comprehensive view of various subpopulations, their patterns of services use and their associated costs. Because people who experience homelessness are often users of multiple systems, and are often homeless in part because of ineffective programs and insufficient aftercare, these data may be crucial to identifying the gaps that need to be filled to prevent and reduce the duration of homelessness spells. These data can also make visible what may otherwise be hidden and understudied aspects of the homelessness problem. The use of administrative data for purposes for which they were not originally intended also raises some ethical issues that must be considered in light of their potential to be misused.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Potential%20of%20Linked%20Administrative%20Data%20for%20Advancing%20Homelessness%20Research%20and%20Policy%281%29.pdf"
   }
 ]
