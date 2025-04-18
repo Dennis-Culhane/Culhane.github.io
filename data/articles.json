@@ -1,16 +1,5 @@
 [
   {
-    "id": "1738573071803",
-    "title": "Palm Beach County Community Resource Information and Mapping System (PBC CRIMS)",
-    "authors": "Dennis P Culhane",
-    "date": "2000-01-01",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "A web-based tool for creating maps, tables, charts and neighoborhood statistical profiles for Palm Beach County, Florida.",
-    "pdfUrl": "http://gisweb.co.palm-beach.fl.us/crims/default.asp"
-  },
-  {
     "id": "1738573074688",
     "title": "Philadelphia Crimebase",
     "authors": "Dennis P Culhane",
