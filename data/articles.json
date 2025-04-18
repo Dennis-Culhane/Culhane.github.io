@@ -2460,5 +2460,16 @@
     ],
     "abstract": "A web-based tool for creating maps, tables, charts and statistical profiles of Philadelphia's neighborhoods using crime incident data from the Philadelphia Police Department.",
     "pdfUrl": "http://www.cml.upenn.edu/crimebase"
+  },
+  {
+    "id": "1744965913771",
+    "title": "Philadelphia Muralbase",
+    "authors": "Dennis P Culhane",
+    "date": "2001-01-02",
+    "categories": [
+      "AISP and Integrated Data Systems"
+    ],
+    "abstract": "A web-based tool for viewing murals and the spatial distribution of public murals by topic and artist in Philadelphia.",
+    "pdfUrl": "http://www.cml.upenn.edu/muralbase"
   }
 ]
