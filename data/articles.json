@@ -3036,5 +3036,17 @@
     ],
     "abstract": "Prior research has found negative impacts of public housing on neighborhood quality. Few studies have examined the impact of public and other assisted housing programs on real estate prices, particularly differential impact by program type. In this study, federally assisted housing units by program type are aggregated by 1/8- or 1/4-mile radii around individual property sales and regressed on sales prices from 1989 through 1991, controlling for area demographic, housing, and amenity variables.Results show that public housing developments exert a modest negative impact on property values. Scattered-site public housing and units rented with Section 8 certificates and vouchers have slight negative impacts. Federal Housing Administrationassisted units, public housing homeownership program units, and Section 8 New Construction and Rehabilitation units have modest positive impacts. Low-Income Housing Tax Credit sites have a slight negative effect. Results suggest that homeownership programs and new construction/rehabilitation programs have a more positive impact on property values.",
     "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Differential%20Impacts%20of%20Federally%20Assisted%20Housing%20Programs%20on%20Nearby%20Property%20Values%EF%BC%9AA%20Philadelphia%20Case%20Study.pdf"
+  },
+  {
+    "id": "1744966059327",
+    "title": "The Impact of Welfare Reform on Public Shelter Utilization in Philadelphia: A Time-Series Analysis",
+    "authors": "Dennis P. Culhane, Stephen R Poulin, Lorlene M Hoyt, Stephen Metraux",
+    "date": "2003-01-02",
+    "categories": [
+      "Structural Determinants of Homelessness",
+      "Families with Children"
+    ],
+    "abstract": "The use of public shelters in Philadelphia was examined both before and after the implementation of Act 35, Pennsylvanias response to the Personal Responsibility and Work Opportunity Reconciliation Act of 1996. Univariate interrupted time-series analyses were conducted to determine if trends in shelter utilization (the number of families admitted, by family size, by race, by age of household head, by income, by disability indicator, and by average length of stay) changed significantly after March 1997, the month in which Act 35 was implemented, or after 3, 6, 9, and 12 months of implementation. Results indicate that family size and household head age increased after the implementation of Temporary Assistance for Needy Families, although not at consistent lags. A small negative effect on self-reported substance abuse and a small positive effect on the proportion of household heads with a disability were found, but at inconsistent lags.",
+    "pdfUrl": "https://raw.githubusercontent.com/Dennis-Culhane/Culhane.github.io/main/papers/The%20Impact%20of%20Welfare%20Reform%20on%20Public%20Shelter%20Utilization%20in%20Philadelphia%EF%BC%9AA%20Time-Series%20Analysis.pdf"
   }
 ]
