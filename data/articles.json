@@ -1,16 +1,5 @@
 [
   {
-    "id": "1738573077607",
-    "title": "Philadelphia Muralbase",
-    "authors": "Dennis P Culhane",
-    "date": "2001-01-01",
-    "categories": [
-      "AISP and Integrated Data Systems"
-    ],
-    "abstract": "A web-based tool for viewing murals and the spatial distribution of public murals by topic and artist in Philadelphia.",
-    "pdfUrl": "http://www.cml.upenn.edu/muralbase"
-  },
-  {
     "id": "1738573080588",
     "title": "Philadelphia Neighborhoodbase",
     "authors": "Dennis P Culhane",
