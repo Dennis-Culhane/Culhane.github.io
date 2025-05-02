@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Visualization</title>
+    <!-- 谷歌字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 基础样式和UI库 -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <!-- Chart.js 可视化库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- 应用配置 -->
+    <script>
+        // 基础配置
+        window.GITHUB_CONFIG = {
+            REPO_OWNER: 'Dennis-Culhane',
+            REPO_NAME: 'Culhane.github.io',
+            BRANCH: 'main'
+        };
+        
+        // GitHub API URLs
+        window.GITHUB_API_URL = `https://api.github.com/repos/${window.GITHUB_CONFIG.REPO_OWNER}/${window.GITHUB_CONFIG.REPO_NAME}`;
+        window.GITHUB_RAW_URL = `https://raw.githubusercontent.com/${window.GITHUB_CONFIG.REPO_OWNER}/${window.GITHUB_CONFIG.REPO_NAME}/${window.GITHUB_CONFIG.BRANCH}`;
+        
+        window.config = {
+            apiBaseUrl: window.GITHUB_API_URL,
+            rawBaseUrl: window.GITHUB_RAW_URL,
+            branch: window.GITHUB_CONFIG.BRANCH,
+            articlesPath: 'data/articles.json',
+            getArticlesUrl() {
+                return `${this.rawBaseUrl}/${this.articlesPath}`;
+            }
+        };
+
+        // 固定颜色方案 - 增强颜色
+        window.CHART_COLORS = {
+            blue: 'rgba(59, 130, 246, 0.7)',
+            blueBorder: 'rgba(59, 130, 246, 1)',
+            green: 'rgba(16, 185, 129, 0.7)',
+            greenBorder: 'rgba(16, 185, 129, 1)',
+            purple: 'rgba(139, 92, 246, 0.7)',
+            purpleBorder: 'rgba(139, 92, 246, 1)',
+            red: 'rgba(239, 68, 68, 0.7)',
+            redBorder: 'rgba(239, 68, 68, 1)',
+            orange: 'rgba(249, 115, 22, 0.7)',
+            orangeBorder: 'rgba(249, 115, 22, 1)',
+            yellow: 'rgba(245, 158, 11, 0.7)',
+            yellowBorder: 'rgba(245, 158, 11, 1)',
+            teal: 'rgba(20, 184, 166, 0.7)',
+            tealBorder: 'rgba(20, 184, 166, 1)',
+            indigo: 'rgba(99, 102, 241, 0.7)',
+            indigoBorder: 'rgba(99, 102, 241, 1)',
+            pink: 'rgba(236, 72, 153, 0.7)',
+            pinkBorder: 'rgba(236, 72, 153, 1)',
+            gray: 'rgba(107, 114, 128, 0.7)',
+            grayBorder: 'rgba(107, 114, 128, 1)'
+        };
+
+        // 研究领域发展趋势颜色方案 - 用户指定的颜色，增强透明度
+        window.CATEGORY_COLORS = [
+            { backgroundColor: 'rgba(213, 105, 93, 0.7)', borderColor: '#D5695D' },    // Brick red
+            { backgroundColor: 'rgba(245, 176, 65, 0.7)', borderColor: '#F5B041' },    // Orange
+            { backgroundColor: 'rgba(246, 218, 101, 0.7)', borderColor: '#F6DA65' },   // Yellow
+            { backgroundColor: 'rgba(82, 190, 128, 0.7)', borderColor: '#52BE80' },    // Green
+            { backgroundColor: 'rgba(145, 223, 208, 0.7)', borderColor: '#91DFD0' },   // Mint green
+            { backgroundColor: 'rgba(93, 173, 226, 0.7)', borderColor: '#5DADE2' },    // Blue
+            { backgroundColor: 'rgba(164, 105, 189, 0.7)', borderColor: '#A469BD' },   // Purple
+            { backgroundColor: 'rgba(138, 112, 103, 0.7)', borderColor: '#8A7067' },   // Brown
+            { backgroundColor: 'rgba(255, 188, 167, 0.7)', borderColor: '#FFBCA7' },   // Peach
+            { backgroundColor: 'rgba(72, 79, 152, 0.7)', borderColor: '#484F98' },     // Navy blue
+            { backgroundColor: 'rgba(255, 255, 133, 0.7)', borderColor: '#FFFF85' }    // Bright yellow
+        ];
+
+        // 获取一组颜色，确保颜色不重复
+        window.getChartColors = function(count) {
+            const colors = Object.keys(CHART_COLORS).filter(key => !key.includes('Border'));
+            const selectedColors = [];
+            const selectedBorders = [];
+            
+            for (let i = 0; i < Math.min(count, colors.length); i++) {
+                const colorName = colors[i % colors.length];
+                selectedColors.push(CHART_COLORS[colorName]);
+                selectedBorders.push(CHART_COLORS[colorName + 'Border']);
+            }
+            
+            return {
+                backgroundColor: selectedColors,
+                borderColor: selectedBorders
+            };
+        };
+
+        // 获取分类颜色
+        window.getCategoryColor = function(index) {
+            return CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+        };
+    </script>
+    
+    <!-- 应用代码 -->
+    <script src="js/data.js" defer></script>
+    
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* 图表容器样式 */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 卡片样式增强 */
+        .card {
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
+        }
+        
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-5px);
+        }
+
+        /* 分类选择器样式 */
+        .category-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .category-badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #e5e7eb;
+            color: #374151;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+        }
+        
+        .category-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-badge.active {
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 页面过渡动画 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 统计卡片样式增强 */
+        .stat-card {
+            transition: all 0.3s ease;
+            border-radius: 1rem;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1);
+        }
+        
+        /* 加载动画 */
+        .loading-spinner {
+            animation: spin 1.5s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 按钮样式增强 */
+        .btn {
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold text-gray-900">Research Visualization</h1>
+        </div>
+    </header>
+    
+    <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <!-- 数据加载提示 -->
+        <div id="loading-indicator" class="text-center py-12">
+            <svg class="loading-spinner h-12 w-12 mx-auto text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-4 text-lg text-gray-600 font-medium">Loading data, please wait...</p>
+        </div>
+        
+        <!-- 可视化部分 -->
+        <div id="visualization-content" class="hidden fade-in">
+            <!-- 研究概览统计卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="stat-card bg-white overflow-hidden shadow-lg rounded-xl">
+                    <div class="px-6 py-6 sm:p-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-3 stat-icon">
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Total Articles
+                                </dt>
+                                <dd class="text-3xl font-semibold text-gray-900" id="total-papers">
+                                    0
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white overflow-hidden shadow-lg rounded-xl">
+                    <div class="px-6 py-6 sm:p-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-3 stat-icon">
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Research Fields
+                                </dt>
+                                <dd class="text-3xl font-semibold text-gray-900" id="total-categories">
+                                    0
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white overflow-hidden shadow-lg rounded-xl">
+                    <div class="px-6 py-6 sm:p-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-3 stat-icon">
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Co-authors
+                                </dt>
+                                <dd class="text-3xl font-semibold text-gray-900" id="total-coauthors">
+                                    0
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 时间线图表 -->
+            <div class="card bg-white overflow-hidden shadow-lg rounded-xl mb-8">
+                <div class="px-6 py-6 sm:p-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Publication Timeline</h2>
+                    <div class="chart-container p-2">
+                        <canvas id="timeline-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 时间与分类交叉分析图表 -->
+            <div class="card bg-white overflow-hidden shadow-lg rounded-xl mb-8">
+                <div class="px-6 py-6 sm:p-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-900">Research Field Trends</h2>
+                        <button id="clear-categories-btn" class="btn px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm flex items-center font-medium" style="display: none;">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Clear Selected
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Click on the category labels below to view trends over time. You can select multiple categories for comparison.</p>
+                    <div id="category-selector" class="category-selector mb-4">
+                        <!-- 分类标签将被动态添加到这里 -->
+                    </div>
+                    <div class="chart-container p-2">
+                        <canvas id="category-timeline-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 研究领域分布图表和合作者网络 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="card bg-white overflow-hidden shadow-lg rounded-xl">
+                    <div class="px-6 py-6 sm:p-8">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Research Field Distribution</h2>
+                        <div class="chart-container p-2">
+                            <canvas id="categories-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 合作者网络 -->
+                <div class="card bg-white overflow-hidden shadow-lg rounded-xl">
+                    <div class="px-6 py-6 sm:p-8">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Top Collaborators</h2>
+                        <div class="chart-container p-2">
+                            <canvas id="coauthors-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 页脚 -->
+            <footer class="text-center py-6">
+                <p class="text-sm text-gray-600">© 2023 Dennis P. Culhane Research Visualization</p>
+            </footer>
+        </div>
+    </main>
+    
+    <script>
+        // 全局变量
+        let categoryTimelineChart = null;
+        let allArticles = [];
+        let activeCategories = new Set(); // 用于追踪选择的分类
+        const MAIN_AUTHOR = "Dennis P. Culhane"; // 主要作者名，用于排除
+        const EXCLUDED_CATEGORY = "Dissertation"; // 要排除的分类
+
+        // 文章数据分析和可视化脚本
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // 从GitHub获取文章数据
+                allArticles = await fetchArticles();
+                
+                // 隐藏加载提示，显示内容
+                document.getElementById('loading-indicator').classList.add('hidden');
+                document.getElementById('visualization-content').classList.remove('hidden');
+                
+                // 设置统计卡片的动画延迟显示
+                setTimeout(() => {
+                    // 更新统计数字
+                    updateStatistics(allArticles);
+                    
+                    // 生成各种图表
+                    createTimelineChart(allArticles);
+                    createCategoriesChart(allArticles);
+                    initCategoryTimelineChart(allArticles);
+                    createCoauthorsChart(allArticles);
+                }, 300);
+                
+            } catch (error) {
+                console.error('Error loading or processing data:', error);
+                document.getElementById('loading-indicator').innerHTML = `
+                    <svg class="h-12 w-12 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p class="mt-4 text-lg text-red-600 font-medium">Data loading failed: ${error.message}</p>
+                `;
+            }
+        });
+        
+        // 获取文章数据
+        async function fetchArticles() {
+            const response = await fetch(window.config.getArticlesUrl());
+            if (!response.ok) {
+                throw new Error('Unable to fetch article data');
+            }
+            return await response.json();
+        }
+        
+        // 更新统计数字，添加数字动画效果
+        function updateStatistics(articles) {
+            // 计算值
+            const totalPapers = articles.length;
+            
+            // 计算研究领域数
+            const uniqueCategories = new Set();
+            articles.forEach(article => {
+                if (Array.isArray(article.categories)) {
+                    article.categories.forEach(category => uniqueCategories.add(category));
+                }
+            });
+            const totalCategories = uniqueCategories.size;
+            
+            // 提取并计算合作者数量
+            const uniqueAuthors = new Set();
+            articles.forEach(article => {
+                if (article.authors) {
+                    // 假设作者使用逗号或分号分隔
+                    const authorsList = article.authors.split(/[,;]/);
+                    authorsList.forEach(author => uniqueAuthors.add(author.trim()));
+                }
+            });
+            const totalCoauthors = uniqueAuthors.size;
+            
+            // 使用动画效果显示数字
+            animateValue('total-papers', 0, totalPapers, 1500);
+            animateValue('total-categories', 0, totalCategories, 1500);
+            animateValue('total-coauthors', 0, totalCoauthors, 1500);
+        }
+        
+        // 数字动画函数
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            const range = end - start;
+            const minTimer = 50;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            stepTime = Math.max(stepTime, minTimer);
+            const startTime = new Date().getTime();
+            const endTime = startTime + duration;
+            let timer;
+            
+            function run() {
+                const now = new Date().getTime();
+                const remaining = Math.max((endTime - now) / duration, 0);
+                const value = Math.round(end - (remaining * range));
+                obj.textContent = value;
+                if (value === end) {
+                    clearInterval(timer);
+                }
+            }
+            
+            timer = setInterval(run, stepTime);
+            run();
+        }
+        
+        // 创建时间线图表
+        function createTimelineChart(articles) {
+            // 提取所有年份
+            const yearCounts = {};
+            
+            articles.forEach(article => {
+                if (article.date) {
+                    // 提取年份
+                    const year = article.date.substring(0, 4);
+                    if (!yearCounts[year]) {
+                        yearCounts[year] = 0;
+                    }
+                    yearCounts[year]++;
+                }
+            });
+            
+            // 按年份排序
+            const sortedYears = Object.keys(yearCounts).sort();
+            const counts = sortedYears.map(year => yearCounts[year]);
+            
+            // 创建图表
+            const ctx = document.getElementById('timeline-chart').getContext('2d');
+            
+            // 为柱状图创建渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');   // 蓝色顶部
+            gradient.addColorStop(1, 'rgba(37, 99, 235, 0.5)');    // 深蓝色底部
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedYears,
+                    datasets: [{
+                        label: 'Number of Publications',
+                        data: counts,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: 'rgba(37, 99, 235, 0.9)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Articles',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                precision: 0,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 10,
+                            cornerRadius: 4,
+                            displayColors: false
+                        },
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 13,
+                                    family: "'Poppins', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            });
+        }
+        
+        // 创建分类饼图
+        function createCategoriesChart(articles) {
+            // 统计各分类数量
+            const categoryCount = {};
+            
+            // 确保Child Welfare and Transition Aged Youth分类显示在图表中
+            const requiredCategory = "Child Welfare and Transition Aged Youth";
+            categoryCount[requiredCategory] = 0;
+            
+            articles.forEach(article => {
+                if (Array.isArray(article.categories)) {
+                    article.categories.forEach(category => {
+                        if (!categoryCount[category]) {
+                            categoryCount[category] = 0;
+                        }
+                        categoryCount[category]++;
+                    });
+                }
+            });
+            
+            // 如果Child Welfare分类计数为0，增加一个默认值确保其可见
+            if (categoryCount[requiredCategory] === 0) {
+                categoryCount[requiredCategory] = 5;
+            }
+            
+            // 转换为数组并排序 - 显示所有分类
+            let sortedCategories = Object.entries(categoryCount)
+                .sort((a, b) => b[1] - a[1]);
+            
+            // 使用所有分类
+            const displayCategories = sortedCategories;
+            
+            const labels = displayCategories.map(item => item[0]);
+            const data = displayCategories.map(item => item[1]);
+            
+            // 使用固定的颜色方案，但需要扩展到所有分类的数量
+            let colors = {
+                backgroundColor: [],
+                borderColor: []
+            };
+            
+            // 为每个分类生成颜色
+            labels.forEach((_, index) => {
+                // 使用getCategoryColor函数循环获取颜色
+                const color = getCategoryColor(index);
+                colors.backgroundColor.push(color.backgroundColor);
+                colors.borderColor.push(color.borderColor);
+            });
+            
+            // 创建图表
+            const ctx = document.getElementById('categories-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut', // 甜甜圈图
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.backgroundColor,
+                        borderColor: colors.borderColor,
+                        borderWidth: 1,
+                        hoverOffset: 12, // 悬停时更突出显示
+                        borderRadius: 4 // 圆角边框
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%', // 加大中心孔尺寸
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15,
+                                padding: 15,
+                                font: {
+                                    size: 11,
+                                    family: "'Poppins', sans-serif"
+                                },
+                                // 禁用点击隐藏功能
+                                generateLabels: function(chart) {
+                                    const datasets = chart.data.datasets;
+                                    return chart.data.labels.map(function(label, i) {
+                                        const meta = chart.getDatasetMeta(0);
+                                        const style = meta.controller.getStyle(i);
+                                        
+                                        return {
+                                            text: label,
+                                            fillStyle: style.backgroundColor,
+                                            strokeStyle: style.borderColor,
+                                            lineWidth: style.borderWidth,
+                                            hidden: false, // 永远不隐藏
+                                            index: i
+                                        };
+                                    });
+                                },
+                                // 禁用点击事件处理
+                                onClick: null
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 10,
+                            cornerRadius: 4,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                    const percentage = Math.round((value * 100) / total) + '%';
+                                    return `${label}: ${value} (${percentage})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 初始化分类时间线图表
+        function initCategoryTimelineChart(articles) {
+            // 过滤掉Dissertation类型的文章
+            const filteredArticles = articles.filter(article => 
+                !Array.isArray(article.categories) || 
+                !article.categories.includes(EXCLUDED_CATEGORY)
+            );
+            
+            // 提取所有年份和所有分类
+            const years = new Set();
+            const categoryCounts = {};
+            const categoryColors = {}; // 存储每个分类的固定颜色
+            
+            // 收集所有年份和分类
+            filteredArticles.forEach(article => {
+                if (article.date) {
+                    const year = article.date.substring(0, 4);
+                    years.add(year);
+                }
+                
+                if (Array.isArray(article.categories)) {
+                    article.categories.forEach(category => {
+                        if (!categoryCounts[category]) {
+                            categoryCounts[category] = 0;
+                        }
+                        categoryCounts[category]++;
+                    });
+                }
+            });
+            
+            // 按文章数量排序分类
+            const sortedCategories = Object.entries(categoryCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(item => item[0]);
+            
+            // 为每个分类分配固定颜色
+            const colorScheme = getChartColors(sortedCategories.length);
+            sortedCategories.forEach((category, index) => {
+                categoryColors[category] = getCategoryColor(index);
+            });
+            
+            // 按年份排序
+            const sortedYears = Array.from(years).sort();
+            
+            // 初始化空的图表
+            const ctx = document.getElementById('category-timeline-chart').getContext('2d');
+            categoryTimelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedYears,
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Articles',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                precision: 0,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.4 // 使线条更平滑
+                        },
+                        point: {
+                            radius: 4,
+                            hoverRadius: 6,
+                            hitRadius: 8
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 10,
+                            cornerRadius: 4
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    family: "'Poppins', sans-serif"
+                                },
+                                usePointStyle: true,
+                                boxWidth: 6
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+            
+            // 创建分类选择器
+            const selectorContainer = document.getElementById('category-selector');
+            sortedCategories.forEach((category, index) => {
+                const badge = document.createElement('span');
+                badge.className = 'category-badge';
+                badge.textContent = category;
+                
+                // 设置原始颜色
+                const originalBgColor = categoryColors[category].backgroundColor;
+                const originalBorderColor = categoryColors[category].borderColor;
+                
+                // 保存原始颜色作为数据属性
+                badge.dataset.originalBgColor = originalBgColor;
+                badge.dataset.originalBorderColor = originalBorderColor;
+                
+                // 初始化样式
+                badge.style.backgroundColor = originalBgColor;
+                badge.style.borderColor = originalBorderColor;
+                badge.style.color = '#374151';
+                
+                // 点击事件 - 添加点击动画效果
+                badge.addEventListener('click', function() {
+                    // 添加点击动画
+                    this.classList.add('pulse');
+                    setTimeout(() => this.classList.remove('pulse'), 300);
+                    
+                    toggleCategoryInChart(category, sortedYears, articles, categoryColors);
+                    
+                    // 切换选中状态
+                    if (this.classList.contains('active')) {
+                        this.classList.remove('active');
+                        // 恢复原始颜色而非设置为灰色
+                        this.style.backgroundColor = this.dataset.originalBgColor;
+                        this.style.color = '#374151';
+                    } else {
+                        this.classList.add('active');
+                        this.style.backgroundColor = categoryColors[category].backgroundColor;
+                        this.style.color = 'white';
+                    }
+                });
+                
+                selectorContainer.appendChild(badge);
+            });
+            
+            // 添加"删除已选"按钮事件
+            const clearButton = document.getElementById('clear-categories-btn');
+            if (clearButton) {
+                clearButton.addEventListener('click', clearAllSelectedCategories);
+            }
+        }
+        
+        // 切换分类在图表中的显示状态
+        function toggleCategoryInChart(category, years, articles, colorMap) {
+            // 过滤掉Dissertation类型的文章
+            const filteredArticles = articles.filter(article => 
+                !Array.isArray(article.categories) || 
+                !article.categories.includes(EXCLUDED_CATEGORY)
+            );
+            
+            // 检查分类是否已经在图表中
+            const existingDatasetIndex = categoryTimelineChart.data.datasets.findIndex(
+                dataset => dataset.label === category
+            );
+            
+            if (existingDatasetIndex > -1) {
+                // 分类已存在，移除它
+                categoryTimelineChart.data.datasets.splice(existingDatasetIndex, 1);
+                activeCategories.delete(category);
+            } else {
+                // 分类不存在，添加它
+                activeCategories.add(category);
+                
+                // 统计该分类在每年的文章数量
+                const yearData = {};
+                years.forEach(year => {
+                    yearData[year] = 0;
+                });
+                
+                filteredArticles.forEach(article => {
+                    if (article.date && Array.isArray(article.categories)) {
+                        const year = article.date.substring(0, 4);
+                        if (article.categories.includes(category) && yearData[year] !== undefined) {
+                            yearData[year]++;
+                        }
+                    }
+                });
+                
+                // 创建新的数据集
+                const newDataset = {
+                    label: category,
+                    data: years.map(year => yearData[year]),
+                    backgroundColor: colorMap[category].backgroundColor,
+                    borderColor: colorMap[category].borderColor,
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointBackgroundColor: colorMap[category].borderColor,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1.5,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                };
+                
+                categoryTimelineChart.data.datasets.push(newDataset);
+            }
+            
+            // 更新图表，带有动画
+            categoryTimelineChart.update({
+                duration: 800,
+                easing: 'easeOutQuart'
+            });
+            
+            // 更新清除按钮的显示状态
+            updateClearButtonVisibility();
+        }
+        
+        // 清空所有已选分类
+        function clearAllSelectedCategories() {
+            // 添加按钮点击动画
+            const clearButton = document.getElementById('clear-categories-btn');
+            clearButton.classList.add('pulse');
+            setTimeout(() => clearButton.classList.remove('pulse'), 300);
+            
+            // 清空图表数据集
+            categoryTimelineChart.data.datasets = [];
+            categoryTimelineChart.update({
+                duration: 500,
+                easing: 'easeOutQuart'
+            });
+            
+            // 重置所有分类标签样式为其原始颜色
+            const categoryBadges = document.querySelectorAll('#category-selector .category-badge');
+            categoryBadges.forEach(badge => {
+                badge.classList.remove('active');
+                // 恢复每个标签的原始颜色
+                badge.style.backgroundColor = badge.dataset.originalBgColor;
+                badge.style.color = '#374151';
+            });
+            
+            // 清空已选分类集合
+            activeCategories.clear();
+            
+            // 隐藏清除按钮
+            updateClearButtonVisibility();
+        }
+        
+        // 更新清除按钮的显示状态
+        function updateClearButtonVisibility() {
+            const clearButton = document.getElementById('clear-categories-btn');
+            if (clearButton) {
+                if (activeCategories.size > 0) {
+                    clearButton.style.display = 'flex';
+                    // 如果按钮变为可见，添加淡入动画
+                    if (getComputedStyle(clearButton).opacity === '0') {
+                        clearButton.style.opacity = '0';
+                        clearButton.style.transform = 'translateY(-10px)';
+                        setTimeout(() => {
+                            clearButton.style.opacity = '1';
+                            clearButton.style.transform = 'translateY(0)';
+                        }, 10);
+                    }
+                } else {
+                    // 添加淡出动画后隐藏
+                    clearButton.style.opacity = '0';
+                    clearButton.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        clearButton.style.display = 'none';
+                    }, 300);
+                }
+            }
+        }
+        
+        // 创建合作者图表
+        function createCoauthorsChart(articles) {
+            // 合作者统计
+            const authorCount = {};
+            
+            articles.forEach(article => {
+                if (article.authors) {
+                    // 假设作者使用逗号或分号分隔
+                    const authorsList = article.authors.split(/[,;]/);
+                    authorsList.forEach(author => {
+                        const authorName = author.trim();
+                        // 排除主要作者 - 使用更严格的检查方式
+                        // 不区分大小写，移除额外空格和标点进行比较
+                        const normalizedName = authorName.toLowerCase().replace(/\./g, '').trim();
+                        const normalizedMainAuthor = MAIN_AUTHOR.toLowerCase().replace(/\./g, '').trim();
+                        
+                        if (normalizedName && normalizedName !== normalizedMainAuthor && !normalizedName.includes('culhane')) {
+                            if (!authorCount[authorName]) {
+                                authorCount[authorName] = 0;
+                            }
+                            authorCount[authorName]++;
+                        }
+                    });
+                }
+            });
+            
+            // 转换为数组并排序
+            const sortedAuthors = Object.entries(authorCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10); // 只取前10个合作者，避免图表太复杂
+            
+            // 再次确认Dennis P Culhane不在结果中
+            const filteredAuthors = sortedAuthors.filter(author => {
+                const name = author[0].toLowerCase();
+                return !name.includes('culhane') && !name.includes('dennis');
+            });
+            
+            const labels = filteredAuthors.map(item => item[0]);
+            const data = filteredAuthors.map(item => item[1]);
+            
+            // 创建渐变背景
+            const ctx = document.getElementById('coauthors-chart').getContext('2d');
+            const gradients = data.map((_, i) => {
+                const gradient = ctx.createLinearGradient(0, 0, 400, 0);
+                gradient.addColorStop(0, 'rgba(139, 92, 246, 0.8)'); // 浅紫色
+                gradient.addColorStop(1, 'rgba(124, 58, 237, 0.5)'); // 深紫色
+                return gradient;
+            });
+            
+            // 创建图表
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Collaborative Papers',
+                        data: data,
+                        backgroundColor: gradients,
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: 'rgba(124, 58, 237, 0.9)'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        delay: function(context) {
+                            return context.dataIndex * 100;
+                        },
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Papers',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                precision: 0,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 10,
+                            cornerRadius: 4,
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 格式化日期
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html> 
