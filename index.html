@@ -1444,23 +1444,31 @@
                 if (!response.ok) {
                     throw new Error('Failed to load profile data');
                 }
-                
+
                 const profile = await response.json();
                 console.log('Loaded profile:', profile);
-                
+
                 // 更新页面内容
                 document.getElementById('profile-image').src = profile.imageUrl;
                 document.getElementById('profile-name').textContent = profile.name;
-                document.getElementById('profile-positions').innerHTML = 
+                document.getElementById('profile-positions').innerHTML =
                     profile.positions.map(pos => `<p>${pos}</p>`).join('');
-                document.getElementById('profile-biography').innerHTML = 
+                document.getElementById('profile-biography').innerHTML =
                     profile.biography.map(para => `<p class="mb-4">${para}</p>`).join('');
-                
+
+                // 更新CV链接
+                if (profile.cvUrl) {
+                    const cvLinks = document.querySelectorAll('a[href*="CV"]');
+                    cvLinks.forEach(link => {
+                        link.href = profile.cvUrl;
+                    });
+                }
+
             } catch (error) {
                 console.error('Error loading profile:', error);
                 // 添加错误处理的视觉反馈
                 document.getElementById('profile-name').textContent = 'Error loading profile';
-                document.getElementById('profile-positions').innerHTML = 
+                document.getElementById('profile-positions').innerHTML =
                     '<p class="text-red-500">Failed to load profile data. Please try refreshing the page.</p>';
             }
         }
