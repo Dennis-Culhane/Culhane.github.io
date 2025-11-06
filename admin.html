@@ -445,6 +445,30 @@
                     <textarea id="profile-biography" name="profile-biography" rows="6" required
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">CV File</label>
+                    <div class="mt-1 space-y-2">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-1">
+                                <input type="text" id="current-cv-url" readonly
+                                    class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-sm"
+                                    placeholder="No CV file uploaded">
+                            </div>
+                            <a id="view-cv-link" href="#" target="_blank"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm hidden">
+                                View CV
+                            </a>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="file" id="cv-file" accept=".pdf" class="hidden">
+                            <button type="button" onclick="document.getElementById('cv-file').click()"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm">
+                                Upload New CV
+                            </button>
+                            <span id="cv-file-name" class="text-sm text-gray-600"></span>
+                        </div>
+                    </div>
+                </div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeProfileModal()"
                         class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
@@ -1418,16 +1442,25 @@
                 // 继续处理保存逻辑
                 const imageFile = document.getElementById('profile-image').files[0];
                 let imageUrl = document.getElementById('edit-profile-img').src;
-                
+
                 if (imageFile) {
                     imageUrl = await uploadProfileImage(imageFile);
+                }
+
+                // 处理CV文件上传
+                const cvFile = document.getElementById('cv-file').files[0];
+                let cvUrl = document.getElementById('current-cv-url').value;
+
+                if (cvFile) {
+                    cvUrl = await uploadCV(cvFile);
                 }
 
                 // 添加日志来检查表单数据
                 console.log('Form data values:', {
                     name: formData.get('profile-name'),
                     positions: formData.get('profile-positions'),
-                    biography: formData.get('profile-biography')
+                    biography: formData.get('profile-biography'),
+                    cvUrl: cvUrl
                 });
 
                 const profileData = {
@@ -1440,7 +1473,8 @@
                     biography: (formData.get('profile-biography') || '')
                         .split('\n\n')
                         .map(p => p.trim())
-                        .filter(Boolean)
+                        .filter(Boolean),
+                    cvUrl: cvUrl
                 };
 
                 // 添加日志检查处理后的数据
@@ -1501,11 +1535,32 @@
             }
         }
 
+        // 将文件转换为Base64格式的辅助函数
+        async function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    try {
+                        const base64 = reader.result.split(',')[1];
+                        if (!base64) {
+                            reject(new Error('Failed to convert file to base64'));
+                            return;
+                        }
+                        resolve(base64);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsDataURL(file);
+            });
+        }
+
         async function uploadProfileImage(file) {
             // 实现图片上传逻辑，类似章的 PDF 上传
             const token = sessionStorage.getItem('github_token');
             const content = await readFileAsBase64(file);
-            
+
             const response = await fetch(`${config.apiBaseUrl}/contents/images/${file.name}`, {
                 method: 'PUT',
                 headers: {
@@ -1520,8 +1575,30 @@
             });
 
             if (!response.ok) throw new Error('Failed to upload image');
-            
+
             return `${config.rawBaseUrl}/images/${file.name}`;
+        }
+
+        async function uploadCV(file) {
+            const token = sessionStorage.getItem('github_token');
+            const content = await readFileAsBase64(file);
+
+            const response = await fetch(`${config.apiBaseUrl}/contents/data/${file.name}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: 'Upload CV file',
+                    content: content,
+                    branch: config.branch
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to upload CV');
+
+            return `data/${file.name}`;
         }
 
         function closeProfileModal() {
@@ -1543,12 +1620,23 @@
                 if (response.ok) {
                     const data = await response.json();
                     const profile = JSON.parse(atob(data.content));
-                    
+
                     // 填充编辑表单
                     document.getElementById('edit-profile-img').src = profile.imageUrl;
                     document.getElementById('profile-name').value = profile.name;
                     document.getElementById('profile-positions').value = profile.positions.join('\n');
                     document.getElementById('profile-biography').value = profile.biography.join('\n\n');
+
+                    // 填充CV信息
+                    if (profile.cvUrl) {
+                        document.getElementById('current-cv-url').value = profile.cvUrl;
+                        document.getElementById('view-cv-link').href = profile.cvUrl;
+                        document.getElementById('view-cv-link').classList.remove('hidden');
+                    } else {
+                        document.getElementById('current-cv-url').value = '';
+                        document.getElementById('view-cv-link').classList.add('hidden');
+                    }
+                    document.getElementById('cv-file-name').textContent = '';
                 }
 
                 // 显示模态框
@@ -1583,6 +1671,14 @@
                     document.getElementById('edit-profile-img').src = e.target.result;
                 };
                 reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // CV文件选择
+        document.getElementById('cv-file').addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                document.getElementById('cv-file-name').textContent = file.name;
             }
         });
 
