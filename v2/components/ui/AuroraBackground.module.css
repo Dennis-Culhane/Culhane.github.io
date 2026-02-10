@@ -1,0 +1,95 @@
+/* components/ui/AuroraBackground.module.css */
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background-color: #0A0E1A;
+}
+
+.aurora::before,
+.aurora::after {
+  content: '';
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  will-change: transform;
+}
+
+.aurora::before {
+  background: radial-gradient(circle, #4AEADC 0%, transparent 70%);
+  top: -20%;
+  left: -10%;
+  animation: drift-a 60s ease-in-out infinite alternate, breathe 8s ease-in-out infinite;
+}
+
+.aurora::after {
+  background: radial-gradient(circle, #B18CFF 0%, transparent 70%);
+  bottom: -20%;
+  right: -10%;
+  animation: drift-b 45s ease-in-out infinite alternate, breathe 8s ease-in-out 4s infinite;
+}
+
+@keyframes drift-a {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(15vw, 20vh) scale(1.1); }
+  66%  { transform: translate(-5vw, 35vh) scale(0.95); }
+  100% { transform: translate(10vw, 10vh) scale(1.05); }
+}
+
+@keyframes drift-b {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-20vw, -15vh) scale(1.15); }
+  100% { transform: translate(-5vw, -25vh) scale(0.9); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.30; }
+  50%      { opacity: 0.42; }
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url('/textures/noise-256.png');
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Light mode overrides */
+:global([data-theme="light"]) .aurora {
+  background-color: #F8F6F4;
+}
+
+:global([data-theme="light"]) .aurora::before {
+  background: radial-gradient(circle, rgba(255, 218, 200, 0.5) 0%, transparent 70%);
+  opacity: 0.4;
+  filter: blur(150px);
+}
+
+:global([data-theme="light"]) .aurora::after {
+  background: radial-gradient(circle, rgba(200, 210, 255, 0.5) 0%, transparent 70%);
+  opacity: 0.4;
+  filter: blur(150px);
+}
+
+:global([data-theme="light"]) .grain {
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before,
+  .aurora::after {
+    animation: none;
+  }
+}
